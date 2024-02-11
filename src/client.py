@@ -10,7 +10,11 @@ if "messages" not in st.session_state:
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        content = message["content"]
+        if isinstance(content, bytes):
+            st.image(content)
+        else:
+            st.markdown(content)
 
 
 if prompt := st.chat_input("Write your prompt in this input field"):
@@ -20,7 +24,10 @@ if prompt := st.chat_input("Write your prompt in this input field"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        response = requests.get(f"http://localhost:8000/generate?prompt={prompt}").text
+        response = requests.get(f"http://localhost:8000/generate/text?prompt={prompt}").text
         st.markdown(response)
+    # with st.chat_message("assistant"):
+    #     response = requests.get(f"http://localhost:8000/generate/image?prompt={prompt}").content
+    #     st.image(response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
