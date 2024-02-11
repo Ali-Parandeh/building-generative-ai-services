@@ -33,5 +33,5 @@ def load_image_model() -> StableDiffusionPipeline:
 
 
 def generate_image(pipe: StableDiffusionPipeline, prompt: str) -> Image.Image:
-    output = pipe(prompt).images[0]
+    output = pipe(prompt, num_inference_steps=10).images[0]
     return output
