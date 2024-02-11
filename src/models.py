@@ -28,7 +28,7 @@ def generate_text(pipe: Pipeline, prompt: str) -> str:
 
 
 def load_image_model() -> StableDiffusionPipeline:
-    pipe = StableDiffusionPipeline("runwayml/stable-diffusion-v1-5", torch_dtype=torch.bfloat16)
+    pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float32)
     return pipe
 
 
