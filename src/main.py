@@ -1,17 +1,27 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI, Query, Response, status
 
-from models import (generate_image, generate_text, load_image_model,
-                    load_text_model)
+from models import generate_image, generate_text, load_image_model, load_text_model
 from utils import img_to_bytes
 
-app = FastAPI()
+models = {}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    models["text"] = load_text_model()
+    yield
+    models.clear()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/generate/text")
 def serve_language_model_controller(prompt=Query(...)):
-    pipe = load_text_model()
-    output = generate_text(pipe, prompt)
+    output = generate_text(models["text"], prompt)
     return output
 
 
