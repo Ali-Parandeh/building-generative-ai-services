@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Query, Response, status
+from fastapi import FastAPI, Query, Response, status, BackgroundTasks
 
 from models import generate_image, generate_text, load_image_model, load_text_model
 from utils import img_to_bytes
@@ -34,6 +34,12 @@ def serve_text_to_image_model_controller(prompt=Query(...)):
     pipe = load_image_model()
     output = generate_image(pipe, prompt)
     return Response(content=img_to_bytes(output), media_type="image/png")
+
+
+@app.post("/generate/text/background")
+async def serve_background_task(background_tasks: BackgroundTasks, prompt: str):
+    background_tasks.add_task(generate_text, models["text"], prompt)
+    return {"message": "Task is being processed in the background"}
 
 
 if __name__ == "__main__":
