@@ -36,18 +36,15 @@ def generate_text(pipe: Pipeline, prompt: str) -> str:
         top_p=0.95,
     )
     output = predictions[0]["generated_text"].split("</s>\n<|assistant|>\n")[-1]
+    print(f"Generated text: {output}")
     return output
 
 
 def load_image_model() -> StableDiffusionInpaintPipelineLegacy:
-    pipe = DiffusionPipeline.from_pretrained(
-        "segmind/tiny-sd", torch_dtype=torch.float32
-    )
+    pipe = DiffusionPipeline.from_pretrained("segmind/tiny-sd", torch_dtype=torch.float32)
     return pipe
 
 
-def generate_image(
-    pipe: StableDiffusionInpaintPipelineLegacy, prompt: str
-) -> Image.Image:
+def generate_image(pipe: StableDiffusionInpaintPipelineLegacy, prompt: str) -> Image.Image:
     output = pipe(prompt, num_inference_steps=10).images[0]
     return output
