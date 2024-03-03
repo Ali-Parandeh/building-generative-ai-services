@@ -1,7 +1,8 @@
+import time
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Query, Response, status, BackgroundTasks
+from fastapi import FastAPI, Query, Response, status, BackgroundTasks, Request
 from fastapi.responses import RedirectResponse
 
 from models import generate_image, generate_text, load_image_model, load_text_model
@@ -18,6 +19,21 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+@app.middleware("http")
+async def monitor_service(req: Request, call_next):
+    start_time = time.time()
+    response = await call_next(req)
+    duration = round(time.time() - start_time, 4)
+    response.headers["X-Response-Time"] = str(duration)
+    with open("usage.log", "a") as file:
+        file.write(
+            f"Endpoint: {req.url}"
+            f"\nPrompt: {req.query_params.get('prompt', '')}"
+            f"\nProcessing time: {duration} seconds\n\n"
+        )
+    return response
 
 
 @app.get("/", include_in_schema=False)
