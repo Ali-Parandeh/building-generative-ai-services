@@ -21,7 +21,7 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/", include_in_schema=False)
-def root_redirect_controller():
+def docs_redirect_controller():
     return RedirectResponse(url="/docs", status_code=status.HTTP_303_SEE_OTHER)
 
 
