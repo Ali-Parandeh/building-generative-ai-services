@@ -30,9 +30,10 @@ async def monitor_service(req: Request, call_next):
     response.headers["X-Response-Time"] = str(duration)
     with open("usage.log", "a") as file:
         file.write(
-            f"Endpoint: {req.url}"
+            f"Endpoint triggered: {req.url}"
             f"\nPrompt: {prompt}"
-            f"\nProcessing time: {duration} seconds\n\n"
+            f"\nProcessing time: {duration} seconds"
+            f"\nStatus Code: {response.status_code}\n\n"
         )
     return response
 
@@ -45,6 +46,12 @@ def docs_redirect_controller():
 @app.get("/generate/text")
 def serve_language_model_controller(prompt=Query(...)):
     output = generate_text(models["text"], prompt)
+    return output
+
+
+@app.get("/generate/test")
+def serve_language_model_controller(prompt=Query(...)):
+    output = "So so good"
     return output
 
 
