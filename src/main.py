@@ -2,7 +2,6 @@ import time
 from contextlib import asynccontextmanager
 
 import uvicorn
-from PIL import Image
 from fastapi import FastAPI, Query, Response, status, BackgroundTasks, Request
 from fastapi.responses import RedirectResponse
 
