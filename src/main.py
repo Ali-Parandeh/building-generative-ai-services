@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     models.clear()
 
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 @app.middleware("http")
