@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     models.clear()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 
 @app.middleware("http")
@@ -26,11 +26,12 @@ async def monitor_service(req: Request, call_next):
     start_time = time.time()
     response = await call_next(req)
     duration = round(time.time() - start_time, 4)
+    prompt = req.query_params.get("prompt", "")
     response.headers["X-Response-Time"] = str(duration)
     with open("usage.log", "a") as file:
         file.write(
             f"Endpoint: {req.url}"
-            f"\nPrompt: {req.query_params.get('prompt', '')}"
+            f"\nPrompt: {prompt}"
             f"\nProcessing time: {duration} seconds\n\n"
         )
     return response
