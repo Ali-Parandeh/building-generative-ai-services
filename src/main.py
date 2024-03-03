@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI, Query, Response, status, BackgroundTasks
+from fastapi.responses import RedirectResponse
 
 from models import generate_image, generate_text, load_image_model, load_text_model
 from utils import img_to_bytes
@@ -17,6 +18,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+@app.get("/", include_in_schema=False)
+def root_redirect_controller():
+    return RedirectResponse(url="/docs", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.get("/generate/text")
