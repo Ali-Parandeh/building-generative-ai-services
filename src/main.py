@@ -2,6 +2,7 @@ import time
 from contextlib import asynccontextmanager
 
 import uvicorn
+from PIL import Image
 from fastapi import FastAPI, Query, Response, status, BackgroundTasks, Request
 from fastapi.responses import RedirectResponse
 
@@ -38,6 +39,11 @@ async def monitor_service(req: Request, call_next):
     return response
 
 
+def process_image_generation(prompt: str) -> None:
+    output = generate_image(models["image"], prompt)
+    output.save("output.png")
+
+
 @app.get("/", include_in_schema=False)
 def docs_redirect_controller():
     return RedirectResponse(url="/docs", status_code=status.HTTP_303_SEE_OTHER)
@@ -66,9 +72,9 @@ def serve_text_to_image_model_controller(prompt=Query(...)):
     return Response(content=img_to_bytes(output), media_type="image/png")
 
 
-@app.post("/generate/text/background")
-async def serve_background_task(background_tasks: BackgroundTasks, prompt: str):
-    background_tasks.add_task(generate_text, models["text"], prompt)
+@app.post("/generate/image/background")
+async def serve_image_model_background_controller(background_tasks: BackgroundTasks, prompt: str):
+    background_tasks.add_task(process_image_generation, prompt)
     return {"message": "Task is being processed in the background"}
 
 
