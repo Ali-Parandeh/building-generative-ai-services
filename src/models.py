@@ -19,7 +19,7 @@ def load_text_model():
     return pipe
 
 
-def generate_text(pipe: Pipeline, prompt: str) -> str:
+def generate_text(pipe: Pipeline, prompt: str, temperature: float = 0.7) -> str:
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt},
@@ -29,9 +29,9 @@ def generate_text(pipe: Pipeline, prompt: str) -> str:
     )
     predictions = pipe(
         prompt,
+        temperature=temperature,
         max_new_tokens=256,
         do_sample=True,
-        temperature=0.7,
         top_k=50,
         top_p=0.95,
     )
