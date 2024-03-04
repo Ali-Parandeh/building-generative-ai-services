@@ -1,12 +1,12 @@
 import time
 from contextlib import asynccontextmanager
-
 import uvicorn
-from fastapi import FastAPI, Query, Response, status, BackgroundTasks, Request
+from fastapi import FastAPI, Query, Response, status, BackgroundTasks, Request, HTTPException, Body
 from fastapi.responses import RedirectResponse
 
 from models import generate_image, generate_text, load_image_model, load_text_model
-from utils import img_to_bytes
+from schemas import TextModelRequest, TextModelResponse
+from utils import img_to_bytes, count_tokens
 
 models = {}
 
@@ -48,16 +48,15 @@ def docs_redirect_controller():
     return RedirectResponse(url="/docs", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@app.get("/generate/text")
-def serve_language_model_controller(prompt=Query(...)):
-    output = generate_text(models["text"], prompt)
-    return output
-
-
-@app.get("/generate/test")
-def serve_language_model_controller(prompt=Query(...)):
-    output = "So so good"
-    return output
+@app.post("/generate/text")
+def serve_text_to_text_controller(body: TextModelRequest = Body(...)) -> TextModelResponse:
+    if body.model not in ["tinyllama", "gemma2b"]:
+        raise HTTPException(
+            detail=f"Model {body.model} is not supported", status_code=status.HTTP_400_BAD_REQUEST
+        )
+    output = generate_text(models["text"], body.prompt, body.temperature)
+    tokens = count_tokens(body.prompt) + count_tokens(output)
+    return TextModelResponse(response=output, tokens=tokens)
 
 
 @app.get(
