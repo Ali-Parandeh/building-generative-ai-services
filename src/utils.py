@@ -1,7 +1,8 @@
 from io import BytesIO
 from typing import Literal
-from loguru import logger
 
+import tiktoken
+from loguru import logger
 from PIL import Image
 
 SupportedModelType = Literal["gpt-3.5", "gpt-4"]
@@ -19,7 +20,8 @@ def count_tokens(text: str | None) -> int:
     if text is None:
         logger.warning("Response is None. Assuming 0 tokens used")
         return 0
-    return len(text.split(" "))
+    enc = tiktoken.get_encoding("cl100k_base")
+    return len(enc.encode(text))
 
 
 def calculate_usage_costs(

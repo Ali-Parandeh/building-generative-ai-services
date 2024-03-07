@@ -1,12 +1,15 @@
 import time
 from contextlib import asynccontextmanager
+
 import uvicorn
-from fastapi import FastAPI, Query, Response, status, BackgroundTasks, Request, HTTPException, Body
+from fastapi import (BackgroundTasks, Body, FastAPI, HTTPException, Query,
+                     Request, Response, status)
 from fastapi.responses import RedirectResponse
 
-from models import generate_image, generate_text, load_image_model, load_text_model
+from models import (generate_image, generate_text, load_image_model,
+                    load_text_model)
 from schemas import TextModelRequest, TextModelResponse
-from utils import img_to_bytes, count_tokens
+from utils import count_tokens, img_to_bytes
 
 models = {}
 
