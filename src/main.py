@@ -5,11 +5,13 @@ from typing import Callable
 from uuid import uuid4
 
 import uvicorn
-from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query, Request, Response, status
+from fastapi import (BackgroundTasks, Body, FastAPI, HTTPException, Query,
+                     Request, Response, status)
 from fastapi.responses import RedirectResponse
 
-from models import generate_image, generate_text, load_image_model, load_text_model
-from schemas import TextModelRequest, TextModelResponse
+from models import (generate_image, generate_text, load_image_model,
+                    load_text_model)
+from schemas import ImageModelRequest, TextModelRequest, TextModelResponse
 from utils import img_to_bytes
 
 models = {}
@@ -56,16 +58,12 @@ def docs_redirect_controller():
     return RedirectResponse(url="/docs", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@app.post("/generate/text")
-def serve_text_to_text_controller(
-    request: Request, body: TextModelRequest = Body(...)
-) -> TextModelResponse:
+@app.post("/generate/text", response_model_exclude_defaults=True)
+def serve_text_to_text_controller(request: Request, body: TextModelRequest = Body(...)) -> TextModelResponse:
     if body.model not in ["tinyllama", "gemma2b"]:
-        raise HTTPException(
-            detail=f"Model {body.model} is not supported", status_code=status.HTTP_400_BAD_REQUEST
-        )
-    output = generate_text(models["text"], body.prompt, body.temperature)
-    return TextModelResponse(content=output, ip=request.client.host)
+        raise HTTPException(detail=f"Model {body.model} is not supported", status_code=status.HTTP_400_BAD_REQUEST)
+    # output = generate_text(models["text"], body.prompt, body.temperature)
+    return TextModelResponse(content="dsadas dasdsad dasdas", ip=request.client.host)
 
 
 @app.get(
@@ -73,9 +71,9 @@ def serve_text_to_text_controller(
     responses={status.HTTP_200_OK: {"content": {"image/png": {}}}},
     response_class=Response,
 )
-def serve_text_to_image_model_controller(prompt=Query(...)):
+def serve_text_to_image_model_controller(body: ImageModelRequest = Body(...)):
     pipe = load_image_model()
-    output = generate_image(pipe, prompt)
+    output = generate_image(pipe, body.prompt)
     return Response(content=img_to_bytes(output), media_type="image/png")
 
 

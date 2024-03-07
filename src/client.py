@@ -23,17 +23,11 @@ if prompt := st.chat_input("Write your prompt in this input field"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        response = requests.get(
-            f"http://localhost:8000/generate/text?prompt={prompt}"
-        ).text
+        response = requests.get(f"http://localhost:8000/generate/text?prompt={prompt}").text
         st.text(response)
     with st.chat_message("assistant"):
-        response = requests.get(
-            f"http://localhost:8000/generate/image?prompt={prompt}"
-        ).content
+        response = requests.get(f"http://localhost:8000/generate/image?prompt={prompt}").content
         st.text("Here is your generated image")
         st.image(response)
 
-    st.session_state.messages.append(
-        {"role": "assistant", "content": "Here is your generated image"}
-    )
+    st.session_state.messages.append({"role": "assistant", "content": "Here is your generated image"})

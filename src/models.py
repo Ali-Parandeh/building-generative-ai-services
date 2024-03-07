@@ -45,6 +45,13 @@ def load_image_model() -> StableDiffusionInpaintPipelineLegacy:
     return pipe
 
 
-def generate_image(pipe: StableDiffusionInpaintPipelineLegacy, prompt: str) -> Image.Image:
-    output = pipe(prompt, num_inference_steps=10).images[0]
+def generate_image(
+    pipe: StableDiffusionInpaintPipelineLegacy,
+    prompt: str,
+    num_inference_steps: int = 10,
+    size: int = 256,
+) -> Image.Image:
+    output = pipe(prompt, width=size, height=size, num_inference_steps=num_inference_steps).images[
+        0
+    ]
     return output

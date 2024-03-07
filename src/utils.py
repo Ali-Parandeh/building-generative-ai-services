@@ -34,9 +34,7 @@ def calculate_usage_costs(
         price = prices[model]
     except KeyError as e:
         # raise at runtime - in case someone ignores type errors
-        logger.warning(
-            f"Pricing for model {model} is not available. " "Please update the pricing table."
-        )
+        logger.warning(f"Pricing for model {model} is not available. " "Please update the pricing table.")
         raise e
     req_costs = price * count_tokens(prompt) / 1000
     res_costs = price * count_tokens(response) / 1000
