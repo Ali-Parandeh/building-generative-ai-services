@@ -19,12 +19,12 @@ class TextModelRequest(ModelRequest):
 class ImageModelRequest(ModelRequest):
     model: Literal["tinysd", "dalle"]
     output_size: tuple[PositiveInt, PositiveInt]
-    num_inference_steps: PositiveInt = 200
+    num_inference_steps: Annotated[int, PositiveInt] = 200
 
 
 class ModelResponse(BaseModel):
     request_id: Annotated[str, Field(default_factory=lambda: uuid4().hex)]
-    ip: Annotated[str, IPvAnyAddress]
+    ip: Annotated[str, IPvAnyAddress] | None
     content: Annotated[str | bytes, Field(min=0, max=10000)]
     created_at: datetime = datetime.now()
 
@@ -45,4 +45,4 @@ class TextModelResponse(ModelResponse):
 
 class ImageModelResponse(ModelResponse):
     size: tuple[int, int] = tuple[Field(gte=0), Field(gte=0)]
-    url: HttpUrl | None = None
+    url: Annotated[str, HttpUrl] | None = None
