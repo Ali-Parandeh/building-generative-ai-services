@@ -1,15 +1,16 @@
 import time
 from contextlib import asynccontextmanager
+from datetime import datetime
+from typing import Callable
+from uuid import uuid4
 
 import uvicorn
-from fastapi import (BackgroundTasks, Body, FastAPI, HTTPException, Query,
-                     Request, Response, status)
+from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.responses import RedirectResponse
 
-from models import (generate_image, generate_text, load_image_model,
-                    load_text_model)
+from models import generate_image, generate_text, load_image_model, load_text_model
 from schemas import TextModelRequest, TextModelResponse
-from utils import count_tokens, img_to_bytes
+from utils import img_to_bytes
 
 models = {}
 
@@ -25,18 +26,22 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.middleware("http")
-async def monitor_service(req: Request, call_next):
+async def monitor_service(req: Request, call_next: Callable) -> Response:
     start_time = time.time()
-    response = await call_next(req)
-    duration = round(time.time() - start_time, 4)
-    prompt = req.query_params.get("prompt", "")
-    response.headers["X-Response-Time"] = str(duration)
+    response: Response = await call_next(req)
+    response_time = round(time.time() - start_time, 4)
+    request_id = uuid4().hex
+    response.headers["X-Response-Time"] = str(response_time)
+    response.headers["X-API-Request-ID"] = request_id
     with open("usage.log", "a") as file:
         file.write(
-            f"Endpoint triggered: {req.url}"
-            f"\nPrompt: {prompt}"
-            f"\nProcessing time: {duration} seconds"
-            f"\nStatus Code: {response.status_code}\n\n"
+            f"Request ID: {request_id}"
+            f"\nDatetime: {datetime.utcnow().isoformat()}"
+            f"\nEndpoint triggered: {req.url}"
+            f"\nClient IP Address: {req.client.host}"
+            f"\nResponse time: {response_time} seconds"
+            f"\nStatus Code: {response.status_code}"
+            f"\nSuccessful: {response.status_code < 400}\n\n"
         )
     return response
 
@@ -52,14 +57,15 @@ def docs_redirect_controller():
 
 
 @app.post("/generate/text")
-def serve_text_to_text_controller(body: TextModelRequest = Body(...)) -> TextModelResponse:
+def serve_text_to_text_controller(
+    request: Request, body: TextModelRequest = Body(...)
+) -> TextModelResponse:
     if body.model not in ["tinyllama", "gemma2b"]:
         raise HTTPException(
             detail=f"Model {body.model} is not supported", status_code=status.HTTP_400_BAD_REQUEST
         )
     output = generate_text(models["text"], body.prompt, body.temperature)
-    tokens = count_tokens(body.prompt) + count_tokens(output)
-    return TextModelResponse(response=output, tokens=tokens)
+    return TextModelResponse(content=output, ip=request.client.host)
 
 
 @app.get(
