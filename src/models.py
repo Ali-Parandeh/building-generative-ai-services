@@ -24,9 +24,7 @@ def generate_text(pipe: Pipeline, prompt: str, temperature: float = 0.7) -> str:
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt},
     ]
-    prompt = pipe.tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
+    prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     predictions = pipe(
         prompt,
         temperature=temperature,
@@ -51,7 +49,5 @@ def generate_image(
     num_inference_steps: int = 10,
     size: int = 256,
 ) -> Image.Image:
-    output = pipe(prompt, width=size, height=size, num_inference_steps=num_inference_steps).images[
-        0
-    ]
+    output = pipe(prompt, width=size, height=size, num_inference_steps=num_inference_steps).images[0]
     return output

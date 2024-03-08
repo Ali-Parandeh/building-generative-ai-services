@@ -5,12 +5,10 @@ from typing import Callable
 from uuid import uuid4
 
 import uvicorn
-from fastapi import (BackgroundTasks, Body, FastAPI, HTTPException, Query,
-                     Request, Response, status)
+from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.responses import RedirectResponse
 
-from models import (generate_image, generate_text, load_image_model,
-                    load_text_model)
+from models import generate_image, generate_text, load_image_model, load_text_model
 from schemas import ImageModelRequest, TextModelRequest, TextModelResponse
 from utils import img_to_bytes
 

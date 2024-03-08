@@ -2,8 +2,16 @@ from datetime import datetime
 from typing import Annotated, Literal
 from uuid import uuid4
 
-from pydantic import (BaseModel, Field, HttpUrl, IPvAnyAddress, PositiveInt,
-                      computed_field, field_validator, model_validator)
+from pydantic import (
+    BaseModel,
+    Field,
+    HttpUrl,
+    IPvAnyAddress,
+    PositiveInt,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 
 from utils import count_tokens
 
