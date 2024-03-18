@@ -1,7 +1,11 @@
+import numpy as np
 import torch
 from diffusers import DiffusionPipeline, StableDiffusionInpaintPipelineLegacy
 from PIL import Image
-from transformers import Pipeline, pipeline
+from transformers import (AutoModel, AutoProcessor, BarkModel, BarkProcessor,
+                          Pipeline, pipeline)
+
+from schemas import VoicePresets
 
 system_prompt = """
 Your name is FastAPI bot and you are a helpful
@@ -24,7 +28,9 @@ def generate_text(pipe: Pipeline, prompt: str, temperature: float = 0.7) -> str:
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt},
     ]
-    prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    prompt = pipe.tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
     predictions = pipe(
         prompt,
         temperature=temperature,
@@ -49,5 +55,25 @@ def generate_image(
     num_inference_steps: int = 10,
     size: int = 256,
 ) -> Image.Image:
-    output = pipe(prompt, width=size, height=size, num_inference_steps=num_inference_steps).images[0]
+    output = pipe(prompt, width=size, height=size, num_inference_steps=num_inference_steps).images[
+        0
+    ]
     return output
+
+
+def load_audio_model() -> tuple[BarkProcessor, BarkModel]:
+    processor = AutoProcessor.from_pretrained("suno/bark-small")
+    model = AutoModel.from_pretrained("suno/bark-small")
+    return processor, model
+
+
+def generate_audio(
+    processor: BarkProcessor,
+    model: BarkModel,
+    prompt: str,
+    preset: VoicePresets,
+) -> tuple[np.array, int]:
+    inputs = processor(text=[prompt], return_tensors="pt", voice_preset=preset)
+    output = model.generate(**inputs, do_sample=True).cpu().numpy().squeeze()
+    sample_rate = model.generation_config.sample_rate
+    return output, sample_rate
