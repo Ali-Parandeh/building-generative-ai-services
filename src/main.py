@@ -1,16 +1,24 @@
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Callable
+from typing import Any, Callable, Generator
 from uuid import uuid4
 
 import uvicorn
 from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.responses import RedirectResponse
+from starlette.responses import StreamingResponse
 
-from models import generate_image, generate_text, load_image_model, load_text_model
-from schemas import ImageModelRequest, TextModelRequest, TextModelResponse
-from utils import img_to_bytes
+from models import (
+    generate_audio,
+    generate_image,
+    generate_text,
+    load_audio_model,
+    load_image_model,
+    load_text_model,
+)
+from schemas import ImageModelRequest, TextModelRequest, TextModelResponse, VoicePresets
+from utils import audio_array_to_buffer, img_to_bytes
 
 models = {}
 
@@ -22,7 +30,7 @@ async def lifespan(app: FastAPI):
     models.clear()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 
 @app.middleware("http")
@@ -57,11 +65,15 @@ def docs_redirect_controller():
 
 
 @app.post("/generate/text", response_model_exclude_defaults=True)
-def serve_text_to_text_controller(request: Request, body: TextModelRequest = Body(...)) -> TextModelResponse:
+def serve_text_to_text_controller(
+    request: Request, body: TextModelRequest = Body(...)
+) -> TextModelResponse:
     if body.model not in ["tinyllama", "gemma2b"]:
-        raise HTTPException(detail=f"Model {body.model} is not supported", status_code=status.HTTP_400_BAD_REQUEST)
-    # output = generate_text(models["text"], body.prompt, body.temperature)
-    return TextModelResponse(content="dsadas dasdsad dasdas", ip=request.client.host)
+        raise HTTPException(
+            detail=f"Model {body.model} is not supported", status_code=status.HTTP_400_BAD_REQUEST
+        )
+    output = generate_text(models["text"], body.prompt, body.temperature)
+    return TextModelResponse(content=output, ip=request.client.host)
 
 
 @app.get(
@@ -79,6 +91,20 @@ def serve_text_to_image_model_controller(body: ImageModelRequest = Body(...)):
 async def serve_image_model_background_controller(background_tasks: BackgroundTasks, prompt: str):
     background_tasks.add_task(process_image_generation, prompt)
     return {"message": "Task is being processed in the background"}
+
+
+@app.get(
+    "/generate/audio",
+    responses={status.HTTP_200_OK: {"content": {"audio/wav": {}}}},
+    response_class=StreamingResponse,
+)
+def serve_text_to_audio_model_controller(
+    prompt=Query(...),
+    preset: VoicePresets = Query(default="v2/en_speaker_1"),
+):
+    processor, model = load_audio_model()
+    output, sample_rate = generate_audio(processor, model, prompt, preset)
+    return StreamingResponse(audio_array_to_buffer(output, sample_rate), media_type="audio/wav")
 
 
 if __name__ == "__main__":
