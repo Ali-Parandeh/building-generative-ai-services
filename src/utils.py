@@ -1,6 +1,8 @@
 from io import BytesIO
 from typing import Literal
 
+import numpy as np
+import soundfile
 import tiktoken
 from loguru import logger
 from PIL import Image
@@ -34,7 +36,9 @@ def calculate_usage_costs(
         price = prices[model]
     except KeyError as e:
         # raise at runtime - in case someone ignores type errors
-        logger.warning(f"Pricing for model {model} is not available. " "Please update the pricing table.")
+        logger.warning(
+            f"Pricing for model {model} is not available. " "Please update the pricing table."
+        )
         raise e
     req_costs = price * count_tokens(prompt) / 1000
     res_costs = price * count_tokens(response) / 1000
@@ -43,6 +47,13 @@ def calculate_usage_costs(
 
 
 def img_to_bytes(image: Image.Image, img_format: Literal["PNG", "JPEG"] = "PNG") -> bytes:
-    img_bytes = BytesIO()
-    image.save(img_bytes, format=img_format)
-    return img_bytes.getvalue()
+    buffer = BytesIO()
+    image.save(buffer, format=img_format)
+    return buffer.getvalue()
+
+
+def audio_array_to_buffer(audio_array: np.array, sample_rate: int) -> BytesIO:
+    buffer = BytesIO()
+    soundfile.write(buffer, audio_array, sample_rate, format="wav")
+    buffer.seek(0)
+    return buffer

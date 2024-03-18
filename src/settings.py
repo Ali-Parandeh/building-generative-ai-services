@@ -1,8 +1,8 @@
+from pprint import pprint
 from typing import Annotated
 
 from pydantic import Field, HttpUrl, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pprint import pprint
 
 
 class AppSettings(BaseSettings):
