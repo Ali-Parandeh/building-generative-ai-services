@@ -66,3 +66,6 @@ uvicorn==0.27.0.post1
 validators==0.22.0
 zipp==3.17.0
 loguru==0.7.2
+tiktoken==0.6.0
+av==12.0.0
+soundfile==0.12.1
