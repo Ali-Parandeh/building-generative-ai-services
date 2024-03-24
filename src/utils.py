@@ -1,6 +1,7 @@
 from io import BytesIO
 from typing import Literal
 
+import av
 import numpy as np
 import soundfile
 import tiktoken
@@ -27,17 +28,23 @@ def count_tokens(text: str | None) -> int:
 
 
 def calculate_usage_costs(
-    prompt: str, response: str | None, model: SupportedModelType, prices: PriceTableType
+    prompt: str,
+    response: str | None,
+    model: SupportedModelType,
+    prices: PriceTableType,
 ) -> tuple[float, float, float]:
     if model not in ["gpt-3.5", "gpt-4"]:
         # raise at runtime - in case someone ignores type errors
-        raise ValueError(f"Cost calculation is not supported for {model} model.")
+        raise ValueError(
+            f"Cost calculation is not supported for {model} model."
+        )
     try:
         price = prices[model]
     except KeyError as e:
         # raise at runtime - in case someone ignores type errors
         logger.warning(
-            f"Pricing for model {model} is not available. " "Please update the pricing table."
+            f"Pricing for model {model} is not available. "
+            "Please update the pricing table."
         )
         raise e
     req_costs = price * count_tokens(prompt) / 1000
@@ -46,7 +53,9 @@ def calculate_usage_costs(
     return req_costs, res_costs, total_costs
 
 
-def img_to_bytes(image: Image.Image, img_format: Literal["PNG", "JPEG"] = "PNG") -> bytes:
+def img_to_bytes(
+    image: Image.Image, img_format: Literal["PNG", "JPEG"] = "PNG"
+) -> bytes:
     buffer = BytesIO()
     image.save(buffer, format=img_format)
     return buffer.getvalue()
@@ -56,4 +65,21 @@ def audio_array_to_buffer(audio_array: np.array, sample_rate: int) -> BytesIO:
     buffer = BytesIO()
     soundfile.write(buffer, audio_array, sample_rate, format="wav")
     buffer.seek(0)
+    return buffer
+
+
+def export_to_video_buffer(images: list[Image.Image]) -> BytesIO:
+    buffer = BytesIO()
+    output = av.open(buffer, "w", format="mp4")
+    stream = output.add_stream("h264", 30)
+    stream.width = images[0].width
+    stream.height = images[0].height
+    stream.pix_fmt = "yuv444p"
+    stream.options = {"crf": "17"}
+    for image in images:
+        frame = av.VideoFrame.from_image(image)
+        packet = stream.encode(frame)  # type: ignore
+        output.mux(packet)
+    packet = stream.encode(None)  # type: ignore
+    output.mux(packet)
     return buffer
