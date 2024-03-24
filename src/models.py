@@ -1,9 +1,20 @@
 import numpy as np
 import torch
-from diffusers import DiffusionPipeline, StableDiffusionInpaintPipelineLegacy
+from diffusers import (
+    DiffusionPipeline,
+    ShapEPipeline,
+    StableDiffusionInpaintPipelineLegacy,
+    StableVideoDiffusionPipeline,
+)
 from PIL import Image
-from transformers import (AutoModel, AutoProcessor, BarkModel, BarkProcessor,
-                          Pipeline, pipeline)
+from transformers import (
+    AutoModel,
+    AutoProcessor,
+    BarkModel,
+    BarkProcessor,
+    Pipeline,
+    pipeline,
+)
 
 from schemas import VoicePresets
 
@@ -77,3 +88,36 @@ def generate_audio(
     output = model.generate(**inputs, do_sample=True).cpu().numpy().squeeze()
     sample_rate = model.generation_config.sample_rate
     return output, sample_rate
+
+
+def load_video_model() -> StableVideoDiffusionPipeline:
+    pipe = StableVideoDiffusionPipeline.from_pretrained(
+        "stabilityai/stable-video-diffusion-img2vid",
+        torch_dtype=torch.float16,
+        variant="fp16",
+    )
+    return pipe
+
+
+def generate_video(
+    pipe: StableVideoDiffusionPipeline, image: Image.Image, num_frames: int = 25
+) -> list[Image.Image]:
+    image = image.resize((1024, 576))
+    generator = torch.manual_seed(42)
+    frames = pipe(image, decode_chunk_size=8, generator=generator, num_frames=num_frames).frames[0]
+    return frames
+
+
+def load_3d_model() -> ShapEPipeline:
+    pipe = ShapEPipeline.from_pretrained("openai/shap-e")
+    return pipe
+
+
+def generate_geometry(pipe: ShapEPipeline, prompt: str, num_inference_steps: int):
+    images = pipe(
+        prompt,
+        guidance_scale=15.0,
+        num_inference_steps=num_inference_steps,
+        size=256,  # this is the size of the renders; higher values take longer to render.
+    ).images
+    return images
