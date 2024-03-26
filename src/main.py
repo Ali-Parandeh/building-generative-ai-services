@@ -108,9 +108,7 @@ def serve_text_to_image_model_controller(body: ImageModelRequest = Body(...)):
 
 
 @app.post("/generate/image/background")
-async def serve_image_model_background_controller(
-    background_tasks: BackgroundTasks, prompt: str
-):
+async def serve_image_model_background_controller(background_tasks: BackgroundTasks, prompt: str):
     background_tasks.add_task(process_image_generation, prompt)
     return {"message": "Task is being processed in the background"}
 
@@ -126,9 +124,7 @@ def serve_text_to_audio_model_controller(
 ):
     processor, model = load_audio_model()
     output, sample_rate = generate_audio(processor, model, prompt, preset)
-    return StreamingResponse(
-        audio_array_to_buffer(output, sample_rate), media_type="audio/wav"
-    )
+    return StreamingResponse(audio_array_to_buffer(output, sample_rate), media_type="audio/wav")
 
 
 @app.get(
@@ -136,15 +132,13 @@ def serve_text_to_audio_model_controller(
     responses={status.HTTP_200_OK: {"content": {"video/mpeg": {}}}},
     response_class=StreamingResponse,
 )
-async def serve_text_to_audio_model_controller(
+async def serve_image_to_video_model_controller(
     image: bytes = File(...), num_frames: int = Query(default=25)
 ):
     model = load_video_model()
     image = Image.open(image)
     frames = generate_video(model, image, num_frames)
-    return StreamingResponse(
-        export_to_video_buffer(frames), media_type="video/mp4"
-    )
+    return StreamingResponse(export_to_video_buffer(frames), media_type="video/mp4")
 
 
 if __name__ == "__main__":
