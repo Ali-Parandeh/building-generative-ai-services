@@ -94,7 +94,5 @@ def mesh_to_ply_buffer(mesh: MeshDecoderOutput) -> BytesIO:
         mesh_o3d.vertex_colors = o3d.utility.Vector3dVector(vert_color.cpu().detach().numpy())
 
     o3d.io.write_triangle_mesh(buffer, mesh_o3d, write_ascii=True, compressed=False)
-
-    # Return to the start of the buffer
     buffer.seek(0)
     return buffer

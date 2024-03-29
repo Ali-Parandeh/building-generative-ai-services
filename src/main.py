@@ -134,8 +134,8 @@ async def serve_text_to_3d_model_controller(
     prompt: str = Query(...), num_inference_steps: int = Query(default=25)
 ):
     model = load_3d_model()
-    meshes = generate_3d_geometry(model, prompt, num_inference_steps)
-    return StreamingResponse(mesh_to_ply_buffer(meshes), media_type="application/ply")
+    mesh = generate_3d_geometry(model, prompt, num_inference_steps)
+    return StreamingResponse(mesh_to_ply_buffer(mesh), media_type="application/ply")
 
 
 if __name__ == "__main__":
