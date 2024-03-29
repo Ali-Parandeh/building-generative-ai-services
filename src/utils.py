@@ -3,8 +3,11 @@ from typing import Literal
 
 import av
 import numpy as np
+import open3d as o3d
 import soundfile
 import tiktoken
+import torch
+from diffusers.pipelines.shap_e.renderer import MeshDecoderOutput
 from loguru import logger
 from PIL import Image
 
@@ -35,16 +38,13 @@ def calculate_usage_costs(
 ) -> tuple[float, float, float]:
     if model not in ["gpt-3.5", "gpt-4"]:
         # raise at runtime - in case someone ignores type errors
-        raise ValueError(
-            f"Cost calculation is not supported for {model} model."
-        )
+        raise ValueError(f"Cost calculation is not supported for {model} model.")
     try:
         price = prices[model]
     except KeyError as e:
         # raise at runtime - in case someone ignores type errors
         logger.warning(
-            f"Pricing for model {model} is not available. "
-            "Please update the pricing table."
+            f"Pricing for model {model} is not available. " "Please update the pricing table."
         )
         raise e
     req_costs = price * count_tokens(prompt) / 1000
@@ -53,9 +53,7 @@ def calculate_usage_costs(
     return req_costs, res_costs, total_costs
 
 
-def img_to_bytes(
-    image: Image.Image, img_format: Literal["PNG", "JPEG"] = "PNG"
-) -> bytes:
+def img_to_bytes(image: Image.Image, img_format: Literal["PNG", "JPEG"] = "PNG") -> bytes:
     buffer = BytesIO()
     image.save(buffer, format=img_format)
     return buffer.getvalue()
@@ -82,4 +80,21 @@ def export_to_video_buffer(images: list[Image.Image]) -> BytesIO:
         output.mux(packet)
     packet = stream.encode(None)  # type: ignore
     output.mux(packet)
+    return buffer
+
+
+def mesh_to_ply_buffer(mesh: MeshDecoderOutput) -> BytesIO:
+    buffer = BytesIO()
+    mesh_o3d = o3d.geometry.TriangleMesh()
+    mesh_o3d.vertices = o3d.utility.Vector3dVector(mesh.verts.cpu().detach().numpy())
+    mesh_o3d.triangles = o3d.utility.Vector3iVector(mesh.faces.cpu().detach().numpy())
+
+    if len(mesh.vertex_channels) == 3:  # You have color channels
+        vert_color = torch.stack([mesh.vertex_channels[channel] for channel in "RGB"], dim=1)
+        mesh_o3d.vertex_colors = o3d.utility.Vector3dVector(vert_color.cpu().detach().numpy())
+
+    o3d.io.write_triangle_mesh(buffer, mesh_o3d, write_ascii=True, compressed=False)
+
+    # Return to the start of the buffer
+    buffer.seek(0)
     return buffer
