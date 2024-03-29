@@ -1,20 +1,12 @@
 import numpy as np
 import torch
-from diffusers import (
-    DiffusionPipeline,
-    ShapEPipeline,
-    StableDiffusionInpaintPipelineLegacy,
-    StableVideoDiffusionPipeline,
-)
+from diffusers import (DiffusionPipeline, ShapEPipeline,
+                       StableDiffusionInpaintPipelineLegacy,
+                       StableVideoDiffusionPipeline)
+from diffusers.pipelines.shap_e.renderer import MeshDecoderOutput
 from PIL import Image
-from transformers import (
-    AutoModel,
-    AutoProcessor,
-    BarkModel,
-    BarkProcessor,
-    Pipeline,
-    pipeline,
-)
+from transformers import (AutoModel, AutoProcessor, BarkModel, BarkProcessor,
+                          Pipeline, pipeline)
 
 from schemas import VoicePresets
 
@@ -113,11 +105,10 @@ def load_3d_model() -> ShapEPipeline:
     return pipe
 
 
-def generate_geometry(pipe: ShapEPipeline, prompt: str, num_inference_steps: int):
+def generate_3d_geometry(
+    pipe: ShapEPipeline, prompt: str, num_inference_steps: int
+) -> MeshDecoderOutput:
     images = pipe(
-        prompt,
-        guidance_scale=15.0,
-        num_inference_steps=num_inference_steps,
-        size=256,  # this is the size of the renders; higher values take longer to render.
-    ).images
+        prompt, guidance_scale=15.0, num_inference_steps=num_inference_steps, output_type="mesh"
+    ).images[0]
     return images
