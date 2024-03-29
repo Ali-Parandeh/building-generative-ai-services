@@ -1,43 +1,25 @@
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime
+from io import BytesIO
 from typing import Callable
 from uuid import uuid4
 
 import uvicorn
-from fastapi import (
-    BackgroundTasks,
-    Body,
-    FastAPI,
-    File,
-    HTTPException,
-    Query,
-    Request,
-    Response,
-    UploadFile,
-    status,
-)
+from fastapi import (BackgroundTasks, Body, FastAPI, HTTPException, Query,
+                     Request, Response, UploadFile, status)
 from fastapi.responses import RedirectResponse
 from PIL import Image
 from starlette.responses import StreamingResponse
 
-from models import (
-    generate_audio,
-    generate_image,
-    generate_text,
-    generate_video,
-    load_audio_model,
-    load_image_model,
-    load_text_model,
-    load_video_model,
-)
-from schemas import (
-    ImageModelRequest,
-    TextModelRequest,
-    TextModelResponse,
-    VoicePresets,
-)
-from utils import audio_array_to_buffer, export_to_video_buffer, img_to_bytes
+from models import (generate_3d_geometry, generate_audio, generate_image,
+                    generate_text, generate_video, load_3d_model,
+                    load_audio_model, load_image_model, load_text_model,
+                    load_video_model)
+from schemas import (ImageModelRequest, TextModelRequest, TextModelResponse,
+                     VoicePresets)
+from utils import (audio_array_to_buffer, export_to_video_buffer, img_to_bytes,
+                   mesh_to_ply_buffer)
 
 models = {}
 
@@ -127,18 +109,33 @@ def serve_text_to_audio_model_controller(
     return StreamingResponse(audio_array_to_buffer(output, sample_rate), media_type="audio/wav")
 
 
-@app.get(
+@app.post(
     "/generate/video",
     responses={status.HTTP_200_OK: {"content": {"video/mpeg": {}}}},
     response_class=StreamingResponse,
 )
 async def serve_image_to_video_model_controller(
-    image: bytes = File(...), num_frames: int = Query(default=25)
+    image: UploadFile, num_frames: int = Query(default=25)
 ):
     model = load_video_model()
-    image = Image.open(image)
+    image = Image.frombytes(
+        data=BytesIO(await image.read()), mode="RGB", size=(image.size, image.size)
+    )
     frames = generate_video(model, image, num_frames)
     return StreamingResponse(export_to_video_buffer(frames), media_type="video/mp4")
+
+
+@app.get(
+    "/generate/3d",
+    responses={status.HTTP_200_OK: {"content": {"application/bytes": {}}}},
+    response_class=StreamingResponse,
+)
+async def serve_text_to_3d_model_controller(
+    prompt: str = Query(...), num_inference_steps: int = Query(default=25)
+):
+    model = load_3d_model()
+    meshes = generate_3d_geometry(model, prompt, num_inference_steps)
+    return StreamingResponse(mesh_to_ply_buffer(meshes), media_type="application/ply")
 
 
 if __name__ == "__main__":
