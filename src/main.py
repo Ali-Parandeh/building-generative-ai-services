@@ -144,7 +144,7 @@ async def serve_image_to_video_model_controller(
     responses={status.HTTP_200_OK: {"content": {"model/obj": {}}}},
     response_class=StreamingResponse,
 )
-async def serve_text_to_3d_model_controller(
+def serve_text_to_3d_model_controller(
     prompt: str = Query(...), num_inference_steps: int = Query(default=25)
 ):
     model = load_3d_model()
