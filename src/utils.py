@@ -1,3 +1,4 @@
+import tempfile
 from io import BytesIO
 from typing import Literal
 
@@ -84,7 +85,6 @@ def export_to_video_buffer(images: list[Image.Image]) -> BytesIO:
 
 
 def mesh_to_ply_buffer(mesh: MeshDecoderOutput) -> BytesIO:
-    buffer = BytesIO()
     mesh_o3d = o3d.geometry.TriangleMesh()
     mesh_o3d.vertices = o3d.utility.Vector3dVector(mesh.verts.cpu().detach().numpy())
     mesh_o3d.triangles = o3d.utility.Vector3iVector(mesh.faces.cpu().detach().numpy())
@@ -93,6 +93,9 @@ def mesh_to_ply_buffer(mesh: MeshDecoderOutput) -> BytesIO:
         vert_color = torch.stack([mesh.vertex_channels[channel] for channel in "RGB"], dim=1)
         mesh_o3d.vertex_colors = o3d.utility.Vector3dVector(vert_color.cpu().detach().numpy())
 
-    o3d.io.write_triangle_mesh(buffer, mesh_o3d, write_ascii=True, compressed=False)
-    buffer.seek(0)
+    with tempfile.NamedTemporaryFile(delete=True, suffix=".obj") as tmp:
+        o3d.io.write_triangle_mesh(tmp.name, mesh_o3d, write_ascii=True)
+        with open(tmp.name, "rb") as f:
+            buffer = BytesIO(f.read())
+
     return buffer
