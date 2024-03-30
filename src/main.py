@@ -17,9 +17,8 @@ from fastapi import (
     UploadFile,
     status,
 )
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from PIL import Image
-from starlette.responses import StreamingResponse
 
 from models import (
     generate_3d_geometry,
@@ -142,7 +141,7 @@ async def serve_image_to_video_model_controller(
 
 @app.get(
     "/generate/3d",
-    responses={status.HTTP_200_OK: {"content": {"application/bytes": {}}}},
+    responses={status.HTTP_200_OK: {"content": {"model/obj": {}}}},
     response_class=StreamingResponse,
 )
 async def serve_text_to_3d_model_controller(
@@ -150,7 +149,9 @@ async def serve_text_to_3d_model_controller(
 ):
     model = load_3d_model()
     mesh = generate_3d_geometry(model, prompt, num_inference_steps)
-    return StreamingResponse(mesh_to_ply_buffer(mesh), media_type="application/ply")
+    response = StreamingResponse(mesh_to_ply_buffer(mesh), media_type="model/obj")
+    response.headers["Content-Disposition"] = f"attachment; filename={prompt}.obj"
+    return response
 
 
 if __name__ == "__main__":
