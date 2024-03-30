@@ -84,7 +84,7 @@ def export_to_video_buffer(images: list[Image.Image]) -> BytesIO:
     return buffer
 
 
-def mesh_to_ply_buffer(mesh: MeshDecoderOutput) -> BytesIO:
+def mesh_to_obj_buffer(mesh: MeshDecoderOutput) -> BytesIO:
     mesh_o3d = o3d.geometry.TriangleMesh()
     mesh_o3d.vertices = o3d.utility.Vector3dVector(mesh.verts.cpu().detach().numpy())
     mesh_o3d.triangles = o3d.utility.Vector3iVector(mesh.faces.cpu().detach().numpy())

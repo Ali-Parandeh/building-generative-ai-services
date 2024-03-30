@@ -33,7 +33,7 @@ from models import (
     load_video_model,
 )
 from schemas import ImageModelRequest, TextModelRequest, TextModelResponse, VoicePresets
-from utils import audio_array_to_buffer, export_to_video_buffer, img_to_bytes, mesh_to_ply_buffer
+from utils import audio_array_to_buffer, export_to_video_buffer, img_to_bytes, mesh_to_obj_buffer
 
 models = {}
 
@@ -149,7 +149,7 @@ async def serve_text_to_3d_model_controller(
 ):
     model = load_3d_model()
     mesh = generate_3d_geometry(model, prompt, num_inference_steps)
-    response = StreamingResponse(mesh_to_ply_buffer(mesh), media_type="model/obj")
+    response = StreamingResponse(mesh_to_obj_buffer(mesh), media_type="model/obj")
     response.headers["Content-Disposition"] = f"attachment; filename={prompt}.obj"
     return response
 
