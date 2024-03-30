@@ -6,20 +6,35 @@ from typing import Callable
 from uuid import uuid4
 
 import uvicorn
-from fastapi import (BackgroundTasks, Body, FastAPI, HTTPException, Query,
-                     Request, Response, UploadFile, status)
+from fastapi import (
+    BackgroundTasks,
+    Body,
+    FastAPI,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    UploadFile,
+    status,
+)
 from fastapi.responses import RedirectResponse
 from PIL import Image
 from starlette.responses import StreamingResponse
 
-from models import (generate_3d_geometry, generate_audio, generate_image,
-                    generate_text, generate_video, load_3d_model,
-                    load_audio_model, load_image_model, load_text_model,
-                    load_video_model)
-from schemas import (ImageModelRequest, TextModelRequest, TextModelResponse,
-                     VoicePresets)
-from utils import (audio_array_to_buffer, export_to_video_buffer, img_to_bytes,
-                   mesh_to_ply_buffer)
+from models import (
+    generate_3d_geometry,
+    generate_audio,
+    generate_image,
+    generate_text,
+    generate_video,
+    load_3d_model,
+    load_audio_model,
+    load_image_model,
+    load_text_model,
+    load_video_model,
+)
+from schemas import ImageModelRequest, TextModelRequest, TextModelResponse, VoicePresets
+from utils import audio_array_to_buffer, export_to_video_buffer, img_to_bytes, mesh_to_ply_buffer
 
 models = {}
 
