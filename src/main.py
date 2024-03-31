@@ -92,7 +92,7 @@ def serve_text_to_text_controller(
     return TextModelResponse(content=output, ip=request.client.host)
 
 
-@app.get(
+@app.post(
     "/generate/image",
     responses={status.HTTP_200_OK: {"content": {"image/png": {}}}},
     response_class=Response,
@@ -109,7 +109,7 @@ async def serve_image_model_background_controller(background_tasks: BackgroundTa
     return {"message": "Task is being processed in the background"}
 
 
-@app.get(
+@app.post(
     "/generate/audio",
     responses={status.HTTP_200_OK: {"content": {"audio/wav": {}}}},
     response_class=StreamingResponse,

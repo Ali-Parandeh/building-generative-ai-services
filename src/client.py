@@ -23,14 +23,17 @@ if prompt := st.chat_input("Write your prompt in this input field"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        response = requests.get(f"http://localhost:8000/generate/text?prompt={prompt}").text
+        data = {"prompt": prompt, "model": "tinyllama", "temperature": 0}
+        response = requests.post(f"http://localhost:8000/generate/text", json=data).text
         st.text(response)
     with st.chat_message("assistant"):
-        response = requests.get(f"http://localhost:8000/generate/image?prompt={prompt}").content
+        data = {"prompt": prompt, "model": "tinysd", "output_size": (500, 500)}
+        response = requests.post(f"http://localhost:8000/generate/image", json=data).content
         st.text("Here is your generated image")
         st.image(response)
     with st.chat_message("assistant"):
-        response = requests.get(f"http://localhost:8000/generate/audio?prompt={prompt}").content
+        data = {"prompt": prompt}
+        response = requests.post(f"http://localhost:8000/generate/audio", json=data).content
         st.text("Here is your generated audio")
         st.audio(response)
 
