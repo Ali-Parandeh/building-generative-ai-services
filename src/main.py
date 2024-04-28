@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI):
     models.clear()
 
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 @app.middleware("http")
@@ -115,8 +115,8 @@ async def serve_image_model_background_controller(background_tasks: BackgroundTa
     response_class=StreamingResponse,
 )
 def serve_text_to_audio_model_controller(
-    prompt=Query(...),
-    preset: VoicePresets = Query(default="v2/en_speaker_1"),
+    prompt=Body(...),
+    preset: VoicePresets = Body(default="v2/en_speaker_1"),
 ):
     processor, model = load_audio_model()
     output, sample_rate = generate_audio(processor, model, prompt, preset)
@@ -129,7 +129,7 @@ def serve_text_to_audio_model_controller(
     response_class=StreamingResponse,
 )
 async def serve_image_to_video_model_controller(
-    image: UploadFile, num_frames: int = Query(default=25)
+    image: UploadFile, num_frames: int = Body(default=25)
 ):
     model = load_video_model()
     image = Image.frombytes(
