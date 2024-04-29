@@ -6,34 +6,20 @@ from typing import Callable
 from uuid import uuid4
 
 import uvicorn
-from fastapi import (
-    BackgroundTasks,
-    Body,
-    FastAPI,
-    HTTPException,
-    Query,
-    Request,
-    Response,
-    UploadFile,
-    status,
-)
+from fastapi import (BackgroundTasks, Body, Depends, FastAPI, HTTPException,
+                     Query, Request, Response, UploadFile, status)
 from fastapi.responses import RedirectResponse, StreamingResponse
 from PIL import Image
 
-from models import (
-    generate_3d_geometry,
-    generate_audio,
-    generate_image,
-    generate_text,
-    generate_video,
-    load_3d_model,
-    load_audio_model,
-    load_image_model,
-    load_text_model,
-    load_video_model,
-)
-from schemas import ImageModelRequest, TextModelRequest, TextModelResponse, VoicePresets
-from utils import audio_array_to_buffer, export_to_video_buffer, img_to_bytes, mesh_to_obj_buffer
+from dependencies import get_urls_content
+from models import (generate_3d_geometry, generate_audio, generate_image,
+                    generate_text, generate_video, load_3d_model,
+                    load_audio_model, load_image_model, load_text_model,
+                    load_video_model)
+from schemas import (ImageModelRequest, TextModelRequest, TextModelResponse,
+                     VoicePresets)
+from utils import (audio_array_to_buffer, export_to_video_buffer, img_to_bytes,
+                   mesh_to_obj_buffer)
 
 models = {}
 
@@ -81,14 +67,17 @@ def docs_redirect_controller():
 
 @app.post("/generate/text", response_model_exclude_defaults=True)
 def serve_text_to_text_controller(
-    request: Request, body: TextModelRequest = Body(...)
+    request: Request,
+    body: TextModelRequest = Body(...),
+    urls_content: str = Depends(get_urls_content),
 ) -> TextModelResponse:
     if body.model not in ["tinyllama", "gemma2b"]:
         raise HTTPException(
             detail=f"Model {body.model} is not supported",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
-    output = generate_text(models["text"], body.prompt, body.temperature)
+    prompt = body.prompt + " " + urls_content
+    output = generate_text(models["text"], prompt, body.temperature)
     return TextModelResponse(content=output, ip=request.client.host)
 
 

@@ -1,14 +1,12 @@
 import numpy as np
 import torch
-from diffusers import (
-    DiffusionPipeline,
-    ShapEPipeline,
-    StableDiffusionInpaintPipelineLegacy,
-    StableVideoDiffusionPipeline,
-)
+from diffusers import (DiffusionPipeline, ShapEPipeline,
+                       StableDiffusionInpaintPipelineLegacy,
+                       StableVideoDiffusionPipeline)
 from diffusers.pipelines.shap_e.renderer import MeshDecoderOutput
 from PIL import Image
-from transformers import AutoModel, AutoProcessor, BarkModel, BarkProcessor, Pipeline, pipeline
+from transformers import (AutoModel, AutoProcessor, BarkModel, BarkProcessor,
+                          Pipeline, pipeline)
 
 from schemas import VoicePresets
 
