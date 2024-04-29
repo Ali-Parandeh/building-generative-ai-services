@@ -2,24 +2,42 @@ import time
 from contextlib import asynccontextmanager
 from datetime import datetime
 from io import BytesIO
-from typing import Callable
+from typing import Annotated, Callable
 from uuid import uuid4
 
 import uvicorn
-from fastapi import (BackgroundTasks, Body, Depends, FastAPI, HTTPException,
-                     Query, Request, Response, UploadFile, status)
+from fastapi import (
+    BackgroundTasks,
+    Body,
+    Depends,
+    FastAPI,
+    File,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    UploadFile,
+    status,
+)
 from fastapi.responses import RedirectResponse, StreamingResponse
 from PIL import Image
 
 from dependencies import get_urls_content
-from models import (generate_3d_geometry, generate_audio, generate_image,
-                    generate_text, generate_video, load_3d_model,
-                    load_audio_model, load_image_model, load_text_model,
-                    load_video_model)
-from schemas import (ImageModelRequest, TextModelRequest, TextModelResponse,
-                     VoicePresets)
-from utils import (audio_array_to_buffer, export_to_video_buffer, img_to_bytes,
-                   mesh_to_obj_buffer)
+from models import (
+    generate_3d_geometry,
+    generate_audio,
+    generate_image,
+    generate_text,
+    generate_video,
+    load_3d_model,
+    load_audio_model,
+    load_image_model,
+    load_text_model,
+    load_video_model,
+)
+from schemas import ImageModelRequest, TextModelRequest, TextModelResponse, VoicePresets
+from upload import save_file
+from utils import audio_array_to_buffer, export_to_video_buffer, img_to_bytes, mesh_to_obj_buffer
 
 models = {}
 
@@ -53,6 +71,27 @@ async def monitor_service(req: Request, call_next: Callable) -> Response:
             f"\nSuccessful: {response.status_code < 400}\n\n"
         )
     return response
+
+
+@app.post("/upload")
+async def file_upload_controller(
+    file: Annotated[UploadFile, File(description="A file read as UploadFile")]
+):
+    print(file)
+    if file.content_type != "application/pdf":
+        print(file.content_type)
+        raise HTTPException(
+            detail=f"Only uploading PDF documents are supported",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    try:
+        await save_file(file)
+    except Exception as e:
+        raise HTTPException(
+            detail=f"An error occurred while saving file - Error: {e}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    return {"filename": file.filename, "message": "File uploaded successfully"}
 
 
 def process_image_generation(prompt: str) -> None:

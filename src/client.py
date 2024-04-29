@@ -7,6 +7,9 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 
+st.write("Upload a file to FastAPI")
+file = st.file_uploader("Choose a file", type=["pdf"])
+
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         content = message["content"]
@@ -14,6 +17,14 @@ for message in st.session_state.messages:
             st.audio(content)
         else:
             st.markdown(content)
+
+if st.button("Submit"):
+    if file is not None:
+        files = {"file": (file.name, file, file.type)}
+        response = requests.post("http://localhost:8000/upload", files=files)
+        st.write(response.text)
+    else:
+        st.write("Please provide a file to upload")
 
 
 if prompt := st.chat_input("Write your prompt in this input field"):
@@ -26,16 +37,16 @@ if prompt := st.chat_input("Write your prompt in this input field"):
         data = {"prompt": prompt, "model": "tinyllama", "temperature": 0.1}
         response = requests.post(f"http://localhost:8000/generate/text", json=data).json()
         content = response["content"]
-        st.text(content)
-    with st.chat_message("assistant"):
-        data = {"prompt": prompt, "model": "tinysd", "output_size": (512, 512)}
-        content = requests.post(f"http://localhost:8000/generate/image", json=data).content
-        st.text("Here is your generated image")
-        st.image(content)
-    with st.chat_message("assistant"):
-        data = {"prompt": prompt}
-        content = requests.post(f"http://localhost:8000/generate/audio", json=data).content
-        st.text("Here is your generated audio")
-        st.audio(content)
+        st.markdown(content)
+    # with st.chat_message("assistant"):
+    #     data = {"prompt": prompt, "model": "tinysd", "output_size": (512, 512)}
+    #     content = requests.post(f"http://localhost:8000/generate/image", json=data).content
+    #     st.text("Here is your generated image")
+    #     st.image(content)
+    # with st.chat_message("assistant"):
+    #     data = {"prompt": prompt}
+    #     content = requests.post(f"http://localhost:8000/generate/audio", json=data).content
+    #     st.text("Here is your generated audio")
+    #     st.audio(content)
 
     st.session_state.messages.append({"role": "assistant", "content": content})
