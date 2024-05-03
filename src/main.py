@@ -6,38 +6,22 @@ from typing import Annotated, Callable
 from uuid import uuid4
 
 import uvicorn
-from fastapi import (
-    BackgroundTasks,
-    Body,
-    Depends,
-    FastAPI,
-    File,
-    HTTPException,
-    Query,
-    Request,
-    Response,
-    UploadFile,
-    status,
-)
+from fastapi import (BackgroundTasks, Body, Depends, FastAPI, File,
+                     HTTPException, Query, Request, Response, UploadFile,
+                     status)
 from fastapi.responses import RedirectResponse, StreamingResponse
 from PIL import Image
 
 from dependencies import get_urls_content
-from models import (
-    generate_3d_geometry,
-    generate_audio,
-    generate_image,
-    generate_text,
-    generate_video,
-    load_3d_model,
-    load_audio_model,
-    load_image_model,
-    load_text_model,
-    load_video_model,
-)
-from schemas import ImageModelRequest, TextModelRequest, TextModelResponse, VoicePresets
+from models import (generate_3d_geometry, generate_audio, generate_image,
+                    generate_text, generate_video, load_3d_model,
+                    load_audio_model, load_image_model, load_text_model,
+                    load_video_model)
+from schemas import (ImageModelRequest, TextModelRequest, TextModelResponse,
+                     VoicePresets)
 from upload import save_file
-from utils import audio_array_to_buffer, export_to_video_buffer, img_to_bytes, mesh_to_obj_buffer
+from utils import (audio_array_to_buffer, export_to_video_buffer, img_to_bytes,
+                   mesh_to_obj_buffer)
 
 models = {}
 
