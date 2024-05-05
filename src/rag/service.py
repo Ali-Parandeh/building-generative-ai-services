@@ -1,8 +1,8 @@
 import os
 
 from loguru import logger
-from repository import VectorRepository
-from transform import clean, embed, load
+from .repository import VectorRepository
+from .transform import clean, embed, load
 
 
 class VectorService(VectorRepository):

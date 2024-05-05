@@ -12,12 +12,12 @@ from fastapi import (BackgroundTasks, Body, Depends, FastAPI, File,
 from fastapi.responses import RedirectResponse, StreamingResponse
 from PIL import Image
 
-from dependencies import get_urls_content
+from dependencies import get_rag_content, get_urls_content
 from models import (generate_3d_geometry, generate_audio, generate_image,
                     generate_text, generate_video, load_3d_model,
                     load_audio_model, load_image_model, load_text_model,
                     load_video_model)
-from rag import embed, pdf_text_extractor, vector_service
+from rag import pdf_text_extractor, vector_service
 from schemas import (ImageModelRequest, TextModelRequest, TextModelResponse,
                      VoicePresets)
 from upload import save_file
@@ -64,7 +64,6 @@ async def file_upload_controller(
     bg_text_processor: BackgroundTasks,
 ):
     if file.content_type != "application/pdf":
-        print(file.content_type)
         raise HTTPException(
             detail=f"Only uploading PDF documents are supported",
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -103,19 +102,14 @@ async def serve_text_to_text_controller(
     request: Request,
     body: TextModelRequest = Body(...),
     urls_content: str = Depends(get_urls_content),
+    rag_content: str = Depends(get_rag_content),
 ) -> TextModelResponse:
     if body.model not in ["tinyllama", "gemma2b"]:
         raise HTTPException(
             detail=f"Model {body.model} is not supported",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
-    rag_context = await vector_repo.search(
-        "knowledgebase", embed(body.prompt), 3, 0.7
-    )
-    rag_context_str = "\n".join(
-        [c.payload["original_text"] for c in rag_context]
-    )
-    prompt = body.prompt + " " + urls_content + rag_context_str
+    prompt = body.prompt + " " + urls_content + rag_content
     output = generate_text(models["text"], prompt, body.temperature)
     return TextModelResponse(content=output, ip=request.client.host)
 
