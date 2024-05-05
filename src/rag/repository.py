@@ -37,6 +37,7 @@ class VectorRepository:
         )
 
     async def delete_collection(self, name: str) -> bool:
+        logger.debug(f"Deleting collection {name}")
         return await self.db_client.delete_collection(name)
 
     async def create(
@@ -47,6 +48,9 @@ class VectorRepository:
         source: str,
     ) -> None:
         response = await self.db_client.count(collection_name=collection_name)
+        logger.debug(
+            f"Creating a new vector with ID {response.count} inside the {collection_name}"
+        )
         await self.db_client.upsert(
             collection_name=collection_name,
             points=[
@@ -68,6 +72,9 @@ class VectorRepository:
         retrieval_limit: int,
         score_threshold: float,
     ) -> list[ScoredPoint]:
+        logger.debug(
+            f"Searching for relevant items in the {collection_name} collection"
+        )
         vectors = await self.db_client.search(
             collection_name=collection_name,
             query_vector=query_vector,
