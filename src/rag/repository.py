@@ -1,14 +1,11 @@
-import os
-
 from loguru import logger
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import ScoredPoint
-from transform import clean, embed, load
 
 
 class VectorRepository:
-    def __init__(self, host: str, port: int = 6333) -> None:
+    def __init__(self, host: str = "localhost", port: int = 6333) -> None:
         self.db_client = AsyncQdrantClient(host=host, port=port)
 
     async def create_collection(self, collection_name: str, size: int) -> bool:
@@ -78,24 +75,3 @@ class VectorRepository:
             score_threshold=score_threshold,
         )
         return vectors
-
-
-vector_repo = VectorRepository(host="localhost", port=6333)
-
-
-async def store_file_content_in_db(
-    filepath: str,
-    chunk_size: int = 512,
-    collection_name: str = "knowledgebase",
-    collection_size: int = 768,
-) -> None:
-    await vector_repo.create_collection(collection_name, collection_size)
-    logger.debug(f"Inserting {filepath} content into database")
-    async for chunk in load(filepath, chunk_size):
-        logger.debug(f"Inserting '{chunk[0:20]}...' into database")
-
-        embedding_vector = embed(clean(chunk))
-        filename = os.path.basename(filepath)
-        await vector_repo.create(
-            collection_name, embedding_vector, chunk, filename
-        )

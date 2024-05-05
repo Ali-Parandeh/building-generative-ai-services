@@ -17,8 +17,7 @@ from models import (generate_3d_geometry, generate_audio, generate_image,
                     generate_text, generate_video, load_3d_model,
                     load_audio_model, load_image_model, load_text_model,
                     load_video_model)
-from rag import (embed, pdf_text_extractor, store_file_content_in_db,
-                 vector_repo)
+from rag import embed, pdf_text_extractor, vector_service
 from schemas import (ImageModelRequest, TextModelRequest, TextModelResponse,
                      VoicePresets)
 from upload import save_file
@@ -74,7 +73,7 @@ async def file_upload_controller(
         filepath = await save_file(file)
         bg_text_processor.add_task(pdf_text_extractor, filepath)
         bg_text_processor.add_task(
-            store_file_content_in_db,
+            vector_service.store_file_content_in_db,
             filepath.replace("pdf", "txt"),
             512,
             "knowledgebase",
