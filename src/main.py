@@ -17,6 +17,8 @@ from models import (generate_3d_geometry, generate_audio, generate_image,
                     generate_text, generate_video, load_3d_model,
                     load_audio_model, load_image_model, load_text_model,
                     load_video_model)
+from rag import (embed, pdf_text_extractor, store_file_content_in_db,
+                 vector_repo)
 from schemas import (ImageModelRequest, TextModelRequest, TextModelResponse,
                      VoicePresets)
 from upload import save_file
@@ -59,9 +61,9 @@ async def monitor_service(req: Request, call_next: Callable) -> Response:
 
 @app.post("/upload")
 async def file_upload_controller(
-    file: Annotated[UploadFile, File(description="A file read as UploadFile")]
+    file: Annotated[UploadFile, File(description="A file read as UploadFile")],
+    bg_text_processor: BackgroundTasks,
 ):
-    print(file)
     if file.content_type != "application/pdf":
         print(file.content_type)
         raise HTTPException(
@@ -69,7 +71,16 @@ async def file_upload_controller(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
     try:
-        await save_file(file)
+        filepath = await save_file(file)
+        bg_text_processor.add_task(pdf_text_extractor, filepath)
+        bg_text_processor.add_task(
+            store_file_content_in_db,
+            filepath.replace("pdf", "txt"),
+            512,
+            "knowledgebase",
+            768,
+        )
+
     except Exception as e:
         raise HTTPException(
             detail=f"An error occurred while saving file - Error: {e}",
@@ -89,7 +100,7 @@ def docs_redirect_controller():
 
 
 @app.post("/generate/text", response_model_exclude_defaults=True)
-def serve_text_to_text_controller(
+async def serve_text_to_text_controller(
     request: Request,
     body: TextModelRequest = Body(...),
     urls_content: str = Depends(get_urls_content),
@@ -99,7 +110,13 @@ def serve_text_to_text_controller(
             detail=f"Model {body.model} is not supported",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
-    prompt = body.prompt + " " + urls_content
+    rag_context = await vector_repo.search(
+        "knowledgebase", embed(body.prompt), 3, 0.7
+    )
+    rag_context_str = "\n".join(
+        [c.payload["original_text"] for c in rag_context]
+    )
+    prompt = body.prompt + " " + urls_content + rag_context_str
     output = generate_text(models["text"], prompt, body.temperature)
     return TextModelResponse(content=output, ip=request.client.host)
 
@@ -116,7 +133,9 @@ def serve_text_to_image_model_controller(body: ImageModelRequest = Body(...)):
 
 
 @app.post("/generate/image/background")
-async def serve_image_model_background_controller(background_tasks: BackgroundTasks, prompt: str):
+def serve_image_model_background_controller(
+    background_tasks: BackgroundTasks, prompt: str
+):
     background_tasks.add_task(process_image_generation, prompt)
     return {"message": "Task is being processed in the background"}
 
@@ -132,7 +151,9 @@ def serve_text_to_audio_model_controller(
 ):
     processor, model = load_audio_model()
     output, sample_rate = generate_audio(processor, model, prompt, preset)
-    return StreamingResponse(audio_array_to_buffer(output, sample_rate), media_type="audio/wav")
+    return StreamingResponse(
+        audio_array_to_buffer(output, sample_rate), media_type="audio/wav"
+    )
 
 
 @app.post(
@@ -145,10 +166,14 @@ async def serve_image_to_video_model_controller(
 ):
     model = load_video_model()
     image = Image.frombytes(
-        data=BytesIO(await image.read()), mode="RGB", size=(image.size, image.size)
+        data=BytesIO(await image.read()),
+        mode="RGB",
+        size=(image.size, image.size),
     )
     frames = generate_video(model, image, num_frames)
-    return StreamingResponse(export_to_video_buffer(frames), media_type="video/mp4")
+    return StreamingResponse(
+        export_to_video_buffer(frames), media_type="video/mp4"
+    )
 
 
 @app.get(
@@ -161,8 +186,12 @@ def serve_text_to_3d_model_controller(
 ):
     model = load_3d_model()
     mesh = generate_3d_geometry(model, prompt, num_inference_steps)
-    response = StreamingResponse(mesh_to_obj_buffer(mesh), media_type="model/obj")
-    response.headers["Content-Disposition"] = f"attachment; filename={prompt}.obj"
+    response = StreamingResponse(
+        mesh_to_obj_buffer(mesh), media_type="model/obj"
+    )
+    response.headers["Content-Disposition"] = (
+        f"attachment; filename={prompt}.obj"
+    )
     return response
 
 
