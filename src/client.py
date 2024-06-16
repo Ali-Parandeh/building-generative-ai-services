@@ -35,18 +35,10 @@ if prompt := st.chat_input("Write your prompt in this input field"):
 
     with st.chat_message("assistant"):
         data = {"prompt": prompt, "model": "tinyllama", "temperature": 0.1}
-        response = requests.post(f"http://localhost:8000/generate/text", json=data).json()
+        response = requests.post(
+            f"http://localhost:8000/generate/text", json=data
+        ).json()
         content = response["content"]
         st.markdown(content)
-    # with st.chat_message("assistant"):
-    #     data = {"prompt": prompt, "model": "tinysd", "output_size": (512, 512)}
-    #     content = requests.post(f"http://localhost:8000/generate/image", json=data).content
-    #     st.text("Here is your generated image")
-    #     st.image(content)
-    # with st.chat_message("assistant"):
-    #     data = {"prompt": prompt}
-    #     content = requests.post(f"http://localhost:8000/generate/audio", json=data).content
-    #     st.text("Here is your generated audio")
-    #     st.audio(content)
 
     st.session_state.messages.append({"role": "assistant", "content": content})
