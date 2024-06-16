@@ -25,7 +25,6 @@ from PIL import Image
 from loguru import logger
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
 from dependencies import get_rag_content, get_urls_content
 from models import (
@@ -144,10 +143,6 @@ async def serve_text_to_text_controller(
     prompt = body.prompt + " " + urls_content + rag_content
     output = generate_text(models["text"], prompt, body.temperature)
     return TextModelResponse(content=output, ip=request.client.host)
-
-
-class StreamInput(BaseModel):
-    prompt: str
 
 
 @app.get("/generate/text/stream")
