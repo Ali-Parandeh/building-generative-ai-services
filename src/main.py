@@ -24,6 +24,8 @@ from fastapi.responses import RedirectResponse, StreamingResponse
 from PIL import Image
 from loguru import logger
 from fastapi.websockets import WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from dependencies import get_rag_content, get_urls_content
 from models import (
@@ -144,12 +146,17 @@ async def serve_text_to_text_controller(
     return TextModelResponse(content=output, ip=request.client.host)
 
 
-@app.post("/generate/text/stream")
+class StreamInput(BaseModel):
+    prompt: str
+
+
+@app.get("/generate/text/stream")
 async def serve_text_to_text_stream_controller(
     prompt: str = Query(...),
 ) -> StreamingResponse:
     return StreamingResponse(
-        azure_chat_client.chat_stream(prompt), media_type="text/event-stream"
+        azure_chat_client.chat_stream(prompt),
+        media_type="text/event-stream",
     )
 
 
@@ -248,6 +255,14 @@ def serve_text_to_3d_model_controller(
     )
     return response
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", port=8000, reload=True)
