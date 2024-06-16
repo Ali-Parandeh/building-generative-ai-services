@@ -1,3 +1,4 @@
+import asyncio
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -6,23 +7,52 @@ from typing import Annotated, Callable
 from uuid import uuid4
 
 import uvicorn
-from fastapi import (BackgroundTasks, Body, Depends, FastAPI, File,
-                     HTTPException, Query, Request, Response, UploadFile,
-                     status)
+from fastapi import (
+    BackgroundTasks,
+    Body,
+    Depends,
+    FastAPI,
+    File,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    UploadFile,
+    status,
+)
 from fastapi.responses import RedirectResponse, StreamingResponse
 from PIL import Image
+from loguru import logger
+from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 from dependencies import get_rag_content, get_urls_content
-from models import (generate_3d_geometry, generate_audio, generate_image,
-                    generate_text, generate_video, load_3d_model,
-                    load_audio_model, load_image_model, load_text_model,
-                    load_video_model)
+from models import (
+    generate_3d_geometry,
+    generate_audio,
+    generate_image,
+    generate_text,
+    generate_video,
+    load_3d_model,
+    load_audio_model,
+    load_image_model,
+    load_text_model,
+    load_video_model,
+)
 from rag import pdf_text_extractor, vector_service
-from schemas import (ImageModelRequest, TextModelRequest, TextModelResponse,
-                     VoicePresets)
+from schemas import (
+    ImageModelRequest,
+    TextModelRequest,
+    TextModelResponse,
+    VoicePresets,
+)
+from stream import azure_chat_client, ws_manager
 from upload import save_file
-from utils import (audio_array_to_buffer, export_to_video_buffer, img_to_bytes,
-                   mesh_to_obj_buffer)
+from utils import (
+    audio_array_to_buffer,
+    export_to_video_buffer,
+    img_to_bytes,
+    mesh_to_obj_buffer,
+)
 
 models = {}
 
@@ -112,6 +142,37 @@ async def serve_text_to_text_controller(
     prompt = body.prompt + " " + urls_content + rag_content
     output = generate_text(models["text"], prompt, body.temperature)
     return TextModelResponse(content=output, ip=request.client.host)
+
+
+@app.post("/generate/text/stream")
+async def serve_text_to_text_stream_controller(
+    prompt: str = Query(...),
+) -> StreamingResponse:
+    return StreamingResponse(
+        azure_chat_client.chat_stream(prompt), media_type="text/event-stream"
+    )
+
+
+@app.websocket("/generate/text/stream")
+async def websocket_endpoint(
+    websocket: WebSocket, prompt: str = Query(...)
+) -> None:
+    await ws_manager.connect(websocket)
+    stream = azure_chat_client.chat_stream(prompt)
+    logger.info("Connecting to client....")
+    try:
+        for token in stream:
+            await ws_manager.send(token, websocket)
+            await asyncio.sleep(0.05)
+    except WebSocketDisconnect:
+        logger.info("Client disconnected")
+        ws_manager.disconnect(websocket)
+    except Exception as e:
+        logger.exception(e)
+        ws_manager.disconnect(websocket)
+    finally:
+        logger.info("Client disconnected")
+        ws_manager.disconnect(websocket)
 
 
 @app.post(

@@ -1,12 +1,21 @@
 import numpy as np
 import torch
-from diffusers import (DiffusionPipeline, ShapEPipeline,
-                       StableDiffusionInpaintPipelineLegacy,
-                       StableVideoDiffusionPipeline)
+from diffusers import (
+    DiffusionPipeline,
+    ShapEPipeline,
+    StableDiffusionInpaintPipelineLegacy,
+    StableVideoDiffusionPipeline,
+)
 from diffusers.pipelines.shap_e.renderer import MeshDecoderOutput
 from PIL import Image
-from transformers import (AutoModel, AutoProcessor, BarkModel, BarkProcessor,
-                          Pipeline, pipeline)
+from transformers import (
+    AutoModel,
+    AutoProcessor,
+    BarkModel,
+    BarkProcessor,
+    Pipeline,
+    pipeline,
+)
 
 from schemas import VoicePresets
 
@@ -48,7 +57,9 @@ def generate_text(pipe: Pipeline, prompt: str, temperature: float = 0.7) -> str:
 
 
 def load_image_model() -> StableDiffusionInpaintPipelineLegacy:
-    pipe = DiffusionPipeline.from_pretrained("segmind/tiny-sd", torch_dtype=torch.float32)
+    pipe = DiffusionPipeline.from_pretrained(
+        "segmind/tiny-sd", torch_dtype=torch.float32
+    )
     return pipe
 
 
@@ -58,9 +69,9 @@ def generate_image(
     num_inference_steps: int = 10,
     size: int = 256,
 ) -> Image.Image:
-    output = pipe(prompt, width=size, height=size, num_inference_steps=num_inference_steps).images[
-        0
-    ]
+    output = pipe(
+        prompt, width=size, height=size, num_inference_steps=num_inference_steps
+    ).images[0]
     return output
 
 
@@ -96,7 +107,9 @@ def generate_video(
 ) -> list[Image.Image]:
     image = image.resize((1024, 576))
     generator = torch.manual_seed(42)
-    frames = pipe(image, decode_chunk_size=8, generator=generator, num_frames=num_frames).frames[0]
+    frames = pipe(
+        image, decode_chunk_size=8, generator=generator, num_frames=num_frames
+    ).frames[0]
     return frames
 
 
@@ -109,6 +122,9 @@ def generate_3d_geometry(
     pipe: ShapEPipeline, prompt: str, num_inference_steps: int
 ) -> MeshDecoderOutput:
     images = pipe(
-        prompt, guidance_scale=15.0, num_inference_steps=num_inference_steps, output_type="mesh"
+        prompt,
+        guidance_scale=15.0,
+        num_inference_steps=num_inference_steps,
+        output_type="mesh",
     ).images[0]
     return images
