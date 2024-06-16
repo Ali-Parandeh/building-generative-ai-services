@@ -29,23 +29,31 @@ class AzureOpenAIChatClient:
         )
 
         async for chunk in stream:
-            yield chunk.choices[0].delta.content or ""
+            yield f"data: {chunk.choices[0].delta.content or ''}\n\n"
+        yield f"data: [DONE]\n\n"
 
 
 class WSConnectionManager:
     def __init__(self):
         self.active_connections = []
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket) -> None:
         await websocket.accept()
         self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
+    def disconnect(self, websocket: WebSocket) -> None:
         self.active_connections.remove(websocket)
 
     @staticmethod
-    async def send(message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+    async def send(
+        message: str | bytes | list | dict, websocket: WebSocket
+    ) -> None:
+        if isinstance(message, str):
+            await websocket.send_text(message)
+        if isinstance(message, bytes):
+            await websocket.send_bytes(message)
+        else:
+            await websocket.send_json(message)
 
 
 ws_manager = WSConnectionManager()
