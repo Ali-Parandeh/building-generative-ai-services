@@ -24,7 +24,7 @@ from fastapi.responses import RedirectResponse, StreamingResponse
 from PIL import Image
 from loguru import logger
 from fastapi.websockets import WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from dependencies import get_rag_content, get_urls_content
 from models import (
@@ -87,6 +87,9 @@ async def monitor_service(req: Request, call_next: Callable) -> Response:
             f"\nSuccessful: {response.status_code < 400}\n\n"
         )
     return response
+
+
+app.mount("/pages", StaticFiles(directory="pages"), name="pages")
 
 
 @app.post("/upload")
@@ -250,14 +253,6 @@ def serve_text_to_3d_model_controller(
     )
     return response
 
-
-app.add_middleware(
-    CORSMiddleware,  # type: ignore
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", port=8000, reload=True)
