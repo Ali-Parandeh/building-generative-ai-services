@@ -158,26 +158,23 @@ async def serve_text_to_text_stream_controller(
     )
 
 
-@app.websocket("/generate/text/stream")
-async def websocket_endpoint(
-    websocket: WebSocket, prompt: str = Query(...)
-) -> None:
-    await ws_manager.connect(websocket)
-    stream = azure_chat_client.chat_stream(prompt)
+@app.websocket("/generate/text/streams")
+async def websocket_endpoint(websocket: WebSocket) -> None:
     logger.info("Connecting to client....")
-    try:
-        for token in stream:
-            await ws_manager.send(token, websocket)
-            await asyncio.sleep(0.05)
-    except WebSocketDisconnect:
-        logger.info("Client disconnected")
-        ws_manager.disconnect(websocket)
-    except Exception as e:
-        logger.exception(e)
-        ws_manager.disconnect(websocket)
-    finally:
-        logger.info("Client disconnected")
-        ws_manager.disconnect(websocket)
+    await ws_manager.connect(websocket)
+    while True:
+        try:
+            prompt = await ws_manager.receive(websocket)
+            async for chunk in azure_chat_client.chat_stream(prompt, "ws"):
+                await ws_manager.send(chunk, websocket)
+                await asyncio.sleep(0.05)
+        except WebSocketDisconnect:
+            logger.info("Client disconnected")
+        except Exception as e:
+            logger.error(f"Error with the WebSocket connection: {e}")
+        finally:
+            await ws_manager.disconnect(websocket)
+            break
 
 
 @app.post(
