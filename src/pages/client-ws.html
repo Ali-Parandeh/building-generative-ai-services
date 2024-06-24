@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Stream with WebSockets</title>
+</head>
+<body>
+<button id="streambtn">Start Streaming</button>
+<button id="closebtn">Close Connection</button>
+<input type="text" id="messageInput" placeholder="Enter message">
+<div style="padding-top: 10px" id="container"></div>
+
+<script>
+    const streamButton = document.getElementById('streambtn');
+    const closeButton = document.getElementById('closebtn');
+    const container = document.getElementById('container');
+    const input = document.getElementById('messageInput');
+    const ws = new WebSocket("ws://localhost:8000/generate/text/streams");
+
+    function handleOpen(){
+        console.log("WebSocket connection opened")
+    }
+    function handleMessage(event) {
+        container.textContent += event.data
+    }
+
+    function handleClose(){
+        console.log("WebSocket connection closed")
+    }
+
+    function resetForm(){
+        input.value = '';
+        container.textContent = '';
+    }
+
+    ws.onopen = handleOpen
+    ws.onmessage = handleMessage;
+    ws.onclose = handleClose;
+
+    streamButton.addEventListener('click', function() {
+        const prompt = document.getElementById("messageInput").value
+        if (prompt) {
+            ws.send(prompt);
+        }
+        resetForm();
+    });
+
+    closeButton.addEventListener('click', function() {
+        ws.close()
+    });
+
+</script>
+</body>
+</html>
