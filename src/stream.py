@@ -15,7 +15,7 @@ class AzureOpenAIChatClient:
         )
 
     async def chat_stream(
-        self, prompt: str, model: str = "gpt-3.5-turbo"
+        self, prompt: str, mode: str = "sse", model: str = "gpt-3.5-turbo"
     ) -> AsyncGenerator[str, None]:
         stream = await self.aclient.chat.completions.create(
             messages=[
@@ -29,8 +29,14 @@ class AzureOpenAIChatClient:
         )
 
         async for chunk in stream:
-            yield f"data: {chunk.choices[0].delta.content or ''}\n\n"
-        yield f"data: [DONE]\n\n"
+            if chunk.choices[0].delta.content is not None:
+                yield (
+                    f"data: {chunk.choices[0].delta.content}\n\n"
+                    if mode == "sse"
+                    else chunk.choices[0].delta.content
+                )
+        if mode == "sse":
+            yield f"data: [DONE]\n\n"
 
 
 class WSConnectionManager:
@@ -41,8 +47,13 @@ class WSConnectionManager:
         await websocket.accept()
         self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket) -> None:
+    async def disconnect(self, websocket: WebSocket) -> None:
+        await websocket.close()
         self.active_connections.remove(websocket)
+
+    @staticmethod
+    async def receive(websocket: WebSocket) -> str:
+        return await websocket.receive_text()
 
     @staticmethod
     async def send(
@@ -50,7 +61,7 @@ class WSConnectionManager:
     ) -> None:
         if isinstance(message, str):
             await websocket.send_text(message)
-        if isinstance(message, bytes):
+        elif isinstance(message, bytes):
             await websocket.send_bytes(message)
         else:
             await websocket.send_json(message)
