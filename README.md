@@ -18,9 +18,10 @@ I've tested the dependency installation on both Mac and PC (Windows 11).
 
 ## 🚀 Getting Started
 
-> Branches have not been implemented yet and will be available near the publication time.
-
 At the start of each chapter, checkout the relevant start branch to follow along with the code examples as you develop the application.
 For instance, at the start of chapter 2 checkout the `ch02-starter` branch. 
-If you get stuck or want to see hwo the code should like at the end of the chapter, you can check out the `ch02-end` branch.
+
+If you get stuck or want to view the repository state at the end of each chapter, you can checkout the corresponding `chxx-end` branch.
+
+> Branches have not been implemented yet and will be available near the publication time.
 
