@@ -5,7 +5,7 @@ You can read the early release chapters of the book by clicking on the image bel
 
 [<img alt="Building Generative AI Services with FastAPI (O'Reilly)" src="images/book.jpg" />](https://learning.oreilly.com/library/view/building-generative-ai/9781098160296/)
 
-## Installation 
+## 💻 Installation 
 
 Make sure you are using Python 3.11 when installing dependencies from `requirements.txt` as at the time of writing,
 all dependencies support Python 3.11. 
@@ -14,3 +14,13 @@ If you use later versions of Python, you may face issues with installing the req
 I've tested the dependency installation on both Mac and PC (Windows 11).
 
 > If any of the package installations failed due to dependency conflicts, remove the explicit package versions from `requriements.txt` file to let your package manager resolve dependency versions.
+
+
+## 🚀 Getting Started
+
+> Branches have not been implemented yet and will be available near the publication time.
+
+At the start of each chapter, checkout the relevant start branch to follow along with the code examples as you develop the application.
+For instance, at the start of chapter 2 checkout the `ch02-starter` branch. 
+If you get stuck or want to see hwo the code should like at the end of the chapter, you can check out the `ch02-end` branch.
+
