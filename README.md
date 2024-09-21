@@ -3,7 +3,7 @@ The official code repository for *Building Generative AI Services with FastAPI* 
 
 You can read the early release chapters of the book by clicking on the image below.
 
-[<img alt="Building Generative AI Services with FastAPI (O'Reilly)" src="images/book.jpg" />](https://learning.oreilly.com/library/view/building-generative-ai/9781098160296/)
+[<img alt="Building Generative AI Services with FastAPI (O'Reilly)" width="400" src="images/cover.png" />](https://learning.oreilly.com/library/view/building-generative-ai/9781098160296/)
 
 ## 💻 Installation 
 
