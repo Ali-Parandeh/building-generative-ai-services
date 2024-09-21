@@ -1,4 +1,4 @@
-# Building Generative AI Services with FastAPI
+# 🦆 Building Generative AI Services with FastAPI
 The official code repository for *Building Generative AI Services with FastAPI* to be published worldwide **March 2025**.   
 
 You can read the early release chapters of the book by clicking on the image below.
