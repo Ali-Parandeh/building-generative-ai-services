@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from openai import OpenAI
 
+
 app = FastAPI()
 openai_client = OpenAI(api_key="your_api_key")
 
