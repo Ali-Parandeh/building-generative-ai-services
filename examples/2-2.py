@@ -12,7 +12,7 @@ def get_db():
 app = FastAPI()
 
 
-@app.get("/")
+@app.get("/users/{id}/messages")
 def get_user_messages(db=Depends(get_db)):
     user = db.query(...)  # db is reused
     messages = db.query(...)  # db is reused

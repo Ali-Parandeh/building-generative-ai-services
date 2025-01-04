@@ -1,0 +1,22 @@
+modular-project
+├── app
+│   └── modules
+│   │   ├── auth
+│   │   │   ├── routers.py
+│   │   │   ├── models.py
+│   │   │   ├── dependencies.py
+│   │   │   ├── services.py
+│   │   └── users
+│   │   │   ├── router.py
+│   │   │   ├── models.py
+│   │   │   ├── dependencies.py
+│   │   │   ├── services.py
+│   │   └── profiles
+............
+│   ├── settings.py  # global configs
+│   ├── models.py  # global models
+│   ├── exceptions.py  # global exceptions
+│   └── main.py
+├── requirements.txt
+├── .env
+├── .gitignore

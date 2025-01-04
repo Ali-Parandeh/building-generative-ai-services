@@ -1,0 +1,16 @@
+nested-project
+├── app
+│    ├── main.py
+│    ├── dependencies.py
+│    └── services
+│    │   ├── users.py
+│    │   └── profiles.py
+│    └── models
+│    │   ├── users.py
+│    │   └── profiles.py
+│    └── routers
+│        ├── users.py
+│        └── profiles.py
+├── requirements.txt
+├── .env
+├── .gitignore
