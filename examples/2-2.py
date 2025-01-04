@@ -1,14 +1,19 @@
 from fastapi import FastAPI, Depends
 
 
-def check_age(age: int) -> bool:
-    return age >= 18
+def get_db():
+    db = ...  # create a database session
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 app = FastAPI()
 
-app.get("/")
 
-
-def check_age_controller(is_adult: bool = Depends(check_age)):
-    return is_adult
+@app.get("/")
+def get_user_messages(db=Depends(get_db)):
+    user = db.query(...)  # db is reused
+    messages = db.query(...)  # db is reused
+    return messages
