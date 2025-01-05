@@ -1,19 +1,25 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
+from pydantic import BaseModel, field_validator
 
 
-def get_db():
-    db = ...  # create a database session
-    try:
-        yield db
-    finally:
-        db.close()
+class UserCreate(BaseModel):
+    username: str
+    password: str
+
+    @field_validator("password")
+    def validate_password(cls, value):
+        if len(value) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        if not any(char.isdigit() for char in value):
+            raise ValueError("Password must contain at least one digit")
+        if not any(char.isupper() for char in value):
+            raise ValueError("Password must contain at least one uppercase letter")
+        return value
 
 
 app = FastAPI()
 
 
-@app.get("/users/{email}/messages")
-def get_user_messages(email, db=Depends(get_db)):
-    user = db.query(...)  # db is reused
-    messages = db.query(...)  # db is reused
-    return messages
+@app.post("/users")
+async def create_user_controller(user: UserCreate):
+    return {"name": user.username, "message": "Account successfully created"}

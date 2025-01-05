@@ -1,16 +1,10 @@
-nested-project
+flat-project
 ├── app
-│    ├── main.py
-│    ├── dependencies.py
-│    └── services
-│    │   ├── users.py
-│    │   └── profiles.py
-│    └── models
-│    │   ├── users.py
-│    │   └── profiles.py
-│    └── routers
-│        ├── users.py
-│        └── profiles.py
+│   ├── services.py
+│   ├── database.py
+│   ├── models.py
+│   ├── routers.py
+│   └── main.py
 ├── requirements.txt
 ├── .env
 ├── .gitignore

@@ -1,25 +1,17 @@
-from fastapi import FastAPI
-from pydantic import BaseModel, field_validator
-
-
-class UserCreate(BaseModel):
-    username: str
-    password: str
-
-    @field_validator("password")
-    def validate_password(cls, value):
-        if len(value) < 8:
-            raise ValueError("Password must be at least 8 characters long")
-        if not any(char.isdigit() for char in value):
-            raise ValueError("Password must contain at least one digit")
-        if not any(char.isupper() for char in value):
-            raise ValueError("Password must contain at least one uppercase letter")
-        return value
-
+from fastapi import FastAPI, Depends
 
 app = FastAPI()
 
 
-@app.post("/users")
-async def create_user_controller(user: UserCreate):
-    return {"name": user.username, "message": "Account successfully created"}
+def paginate(skip: int = 0, limit: int = 10):
+    return {"skip": skip, "limit": limit}
+
+
+@app.get("/messages")
+def list_messages_controller(pagination: dict = Depends(paginate)):
+    return ...  # filter and paginate results using pagination params
+
+
+@app.get("/conversations")
+def list_conversations_controller(pagination: dict = Depends(paginate)):
+    return ...  # filter and paginate results using pagination params
