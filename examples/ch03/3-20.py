@@ -7,8 +7,8 @@ app = FastAPI()
 system_prompt = "You are a helpful assistant."
 
 
-@app.get("/generate/text")
-def generate_text_controller(prompt: str) -> list[str]:
+@app.get("/generate/openai/text")
+def serve_openai_language_model_controller(prompt: str) -> list[str]:
     messages = [
         {"role": "system", "content": f"{system_prompt}"},
         {"role": "user", "content": prompt},
