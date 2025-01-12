@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import httpx
-import openai
 from PIL import Image
 from fastapi import FastAPI, status, File, Request, Response
 from fastapi.responses import StreamingResponse
@@ -66,10 +65,9 @@ csv_header = [
 async def monitor_service(
     req: Request, call_next: Callable[[Request], Awaitable[Response]]
 ) -> Response:
+    request_id = uuid4().hex
     request_datetime = datetime.now(timezone.utc).isoformat()
     start_time = time.perf_counter()
-    request_id = uuid4().hex
-    req.headers["X-API-Request-ID"] = request_id
     response: Response = await call_next(req)
     response_time = round(time.perf_counter() - start_time, 4)
     response.headers["X-Response-Time"] = str(response_time)
@@ -192,18 +190,12 @@ async def serve_bentoml_text_to_image_controller(prompt: str):
 
 
 @app.get("/generate/openai/text")
-def serve_openai_language_model_controller(prompt: str) -> list[str]:
-    messages = [
-        {"role": "system", "content": f"{system_prompt}"},
-        {"role": "user", "content": prompt},
-    ]
-
-    response = openai.ChatCompletion.create(
+def serve_openai_language_model_controller(prompt: str) -> str | None:
+    response = openai_client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=messages,
+        messages=[
+            {"role": "system", "content": f"{system_prompt}"},
+            {"role": "user", "content": prompt},
+        ],
     )
-
-    generated_texts = [
-        choice.message["content"].strip() for choice in response["choices"]
-    ]
-    return generated_texts
+    return response.choices[0].message.content

@@ -27,10 +27,9 @@ csv_header = [
 async def monitor_service(
     req: Request, call_next: Callable[[Request], Awaitable[Response]]
 ) -> Response:
+    request_id = uuid4().hex
     request_datetime = datetime.now(timezone.utc).isoformat()
     start_time = time.perf_counter()
-    request_id = uuid4().hex
-    req.headers["X-API-Request-ID"] = request_id
     response: Response = await call_next(req)
     response_time = round(time.perf_counter() - start_time, 4)
     response.headers["X-Response-Time"] = str(response_time)

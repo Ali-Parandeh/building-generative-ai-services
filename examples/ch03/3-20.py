@@ -1,25 +1,20 @@
 # main.py
 
 from fastapi import FastAPI
-import openai
+from openai import OpenAI
 
 app = FastAPI()
+openai_client = OpenAI()
 system_prompt = "You are a helpful assistant."
 
 
 @app.get("/generate/openai/text")
-def serve_openai_language_model_controller(prompt: str) -> list[str]:
-    messages = [
-        {"role": "system", "content": f"{system_prompt}"},
-        {"role": "user", "content": prompt},
-    ]
-
-    response = openai.ChatCompletion.create(
+def serve_openai_language_model_controller(prompt: str) -> str | None:
+    response = openai_client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=messages,
+        messages=[
+            {"role": "system", "content": f"{system_prompt}"},
+            {"role": "user", "content": prompt},
+        ],
     )
-
-    generated_texts = [
-        choice.message["content"].strip() for choice in response["choices"]
-    ]
-    return generated_texts
+    return response.choices[0].message.content
