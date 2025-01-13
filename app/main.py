@@ -96,7 +96,7 @@ def root_controller():
 
 
 @app.get("/chat")
-def chat_controller(prompt: str = "Inspire me"):
+def chat_controller(prompt: str = "Inspire me") -> dict:
     response = openai_client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -104,7 +104,7 @@ def chat_controller(prompt: str = "Inspire me"):
             {"role": "user", "content": prompt},
         ],
     )
-    statement = response.choices[0].message.content.strip()
+    statement = response.choices[0].message.content
     return {"statement": statement}
 
 
