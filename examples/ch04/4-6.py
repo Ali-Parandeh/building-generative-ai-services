@@ -17,7 +17,7 @@ class ModelResponse(BaseModel):
 
 
 class TextModelRequest(ModelRequest):
-    model: Literal["tinyllama", "gemma2b"]
+    model: Literal["gpt-3.5-turbo", "gpt-4o"]
     temperature: float = 0.0
 
 

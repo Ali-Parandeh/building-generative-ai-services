@@ -5,8 +5,8 @@ from loguru import logger
 import tiktoken
 
 
-SupportedModel: TypeAlias = Literal["gpt-3.5", "gpt-4"]
-PriceTable: TypeAlias = dict[SupportedModel, float]
+SupportedModels: TypeAlias = Literal["gpt-3.5", "gpt-4"]
+PriceTable: TypeAlias = dict[SupportedModels, float]
 price_table: PriceTable = {"gpt-3.5": 0.0030, "gpt-4": 0.0200}
 
 
@@ -21,7 +21,7 @@ def count_tokens(text: str | None) -> int:
 def calculate_usage_costs(
     prompt: str,
     response: str | None,
-    model: SupportedModel,
+    model: SupportedModels,
 ) -> tuple[float, float, float]:
     if model not in price_table:
         # raise at runtime - in case someone ignores type errors

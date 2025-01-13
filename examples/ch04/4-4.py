@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 from typing import Literal, TypeAlias
 
-SupportedModel: TypeAlias = Literal["gpt-3.5", "gpt-4"]
-PriceTable: TypeAlias = dict[SupportedModel, float]
+SupportedModels: TypeAlias = Literal["gpt-3.5", "gpt-4"]
+PriceTable: TypeAlias = dict[SupportedModels, float]
 prices: PriceTable = {"gpt-3.5": 0.0030, "gpt-4": 0.0200}
 
 
@@ -13,7 +13,7 @@ prices: PriceTable = {"gpt-3.5": 0.0030, "gpt-4": 0.0200}
 class Message:
     prompt: str
     response: str | None
-    model: SupportedModel
+    model: SupportedModels
 
 
 @dataclass

@@ -16,12 +16,12 @@ class ModelResponse(BaseModel):
     # no defaults set for ip field
     # raises ValidationError if a valid IP address or None is not provided.
     ip: Annotated[str, IPvAnyAddress] | None
-    content: Annotated[str | bytes, Field(min_length=0, max_length=10000)]
+    content: Annotated[str | None, Field(min_length=0, max_length=10000)]
     created_at: datetime = datetime.now()
 
 
 class TextModelRequest(ModelRequest):
-    model: Literal["tinyllama", "gemma2b"]
+    model: Literal["gpt-3.5-turbo", "gpt-4o"]
     temperature: Annotated[float, Field(ge=0.0, le=1.0, default=0.0)]
 
 

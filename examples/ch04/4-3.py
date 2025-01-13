@@ -1,7 +1,7 @@
 from typing import Annotated, Literal
 
-SupportedModelType = Annotated[Literal["gpt-3.5-turbo", "gpt-4o"], "Supported models"]
-PriceTableType = Annotated[dict[SupportedModelType, float], "Supported model pricing table"]
+SupportedModels = Annotated[Literal["gpt-3.5-turbo", "gpt-4o"], "Supported text models"]
+PriceTableType = Annotated[dict[SupportedModels, float], "Supported model pricing table"]
 
 
 prices: PriceTableType = {
