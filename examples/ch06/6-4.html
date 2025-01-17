@@ -41,7 +41,8 @@
 
     button.addEventListener('click', function() {
         const message = input.value;
-        const url = 'http://localhost:8000/generate/text/stream?prompt=' + encodeURIComponent(message);
+        const url = 'http://localhost:8000/generate/text/stream?prompt=' +
+            encodeURIComponent(message);
         resetForm()
 
         source = new EventSource(url);

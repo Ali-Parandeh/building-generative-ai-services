@@ -1,3 +1,8 @@
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function stream(message, maxRetries = 3, initialDelay = 1000, backoffFactor = 2) {
     let delay = initialDelay;
 
@@ -9,7 +14,7 @@ async function stream(message, maxRetries = 3, initialDelay = 1000, backoffFacto
             console.warn(`Failed to establish SSE connection: ${error}`);
             console.log(`Re-establishing connection - attempt number ${attempt + 1}`);
             if (attempt < maxRetries - 1) {
-                await new Promise(resolve => setTimeout(resolve, delay));
+                await sleep(delay);
                 delay *= backoffFactor;
             } else {
                 throw error
