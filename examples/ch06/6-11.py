@@ -1,25 +1,32 @@
 # stream.py
 
-import asyncio
-from typing import AsyncGenerator
+from fastapi.websockets import WebSocket
 
 
-class AzureOpenAIChatClient:
-    def __init__(self):
-        self.aclient = ...
+class WSConnectionManager:
+    def __init__(self) -> None:
+        self.active_connections: list[WebSocket] = []
 
-    async def chat_stream(
-        self, prompt: str, mode: str = "sse", model: str = "gpt-3.5-turbo"
-    ) -> AsyncGenerator[str, None]:
-        stream = ...  # OpenAI chat completion stream
+    async def connect(self, websocket: WebSocket) -> None:
+        await websocket.accept()
+        self.active_connections.append(websocket)
 
-        async for chunk in stream:
-            if chunk.choices[0].delta.content is not None:
-                yield (
-                    f"data: {chunk.choices[0].delta.content}\n\n"
-                    if mode == "sse"
-                    else chunk.choices[0].delta.content
-                )
-                await asyncio.sleep(0.05)
-        if mode == "sse":
-            yield f"data: [DONE]\n\n"
+    async def disconnect(self, websocket: WebSocket) -> None:
+        self.active_connections.remove(websocket)
+        await websocket.close()
+
+    @staticmethod
+    async def receive(websocket: WebSocket) -> str:
+        return await websocket.receive_text()
+
+    @staticmethod
+    async def send(message: str | bytes | list | dict, websocket: WebSocket) -> None:
+        if isinstance(message, str):
+            await websocket.send_text(message)
+        elif isinstance(message, bytes):
+            await websocket.send_bytes(message)
+        else:
+            await websocket.send_json(message)
+
+
+ws_manager = WSConnectionManager()

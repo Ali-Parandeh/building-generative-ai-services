@@ -1,28 +1,25 @@
-# main.py
+# stream.py
 
 import asyncio
-from fastapi import FastAPI
-from fastapi.websockets import WebSocket, WebSocketDisconnect
-from loguru import logger
-from stream import ws_manager, azure_chat_client
-
-app = FastAPI()
+from typing import AsyncGenerator
 
 
-@app.websocket("/generate/text/streams")
-async def websocket_endpoint(websocket: WebSocket) -> None:
-    logger.info("Connecting to client....")
-    await ws_manager.connect(websocket)
-    try:
-        while True:
-            prompt = await ws_manager.receive(websocket)
-            async for chunk in azure_chat_client.chat_stream(prompt, "ws"):
-                await ws_manager.send(chunk, websocket)
+class AzureOpenAIChatClient:
+    def __init__(self):
+        self.aclient = ...
+
+    async def chat_stream(
+        self, prompt: str, mode: str = "sse", model: str = "gpt-3.5-turbo"
+    ) -> AsyncGenerator[str, None]:
+        stream = ...  # OpenAI chat completion stream
+
+        async for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                yield (
+                    f"data: {chunk.choices[0].delta.content}\n\n"
+                    if mode == "sse"
+                    else chunk.choices[0].delta.content
+                )
                 await asyncio.sleep(0.05)
-    except WebSocketDisconnect:
-        logger.info("Client disconnected")
-    except Exception as e:
-        logger.error(f"Error with the WebSocket connection: {e}")
-        await ws_manager.send("An internal server error has occurred")
-    finally:
-        await ws_manager.disconnect(websocket)
+        if mode == "sse":
+            yield f"data: [DONE]\n\n"
