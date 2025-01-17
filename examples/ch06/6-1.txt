@@ -1,0 +1,8 @@
+GET ws://localhost:8000/generate/text/stream HTTP/1.1
+Origin: http://localhost:3000
+Connection: Upgrade
+Host: http://localhost:8000
+Upgrade: websocket
+Sec-WebSocket-Key: 8WnhvZTK66EVvhDG++RD0w==
+Sec-WebSocket-Protocol: html-chat, text-chat
+Sec-WebSocket-Version: 13
