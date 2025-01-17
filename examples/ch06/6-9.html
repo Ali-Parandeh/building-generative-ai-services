@@ -1,0 +1,56 @@
+{# pages/client-sse-post.html #}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>SSE With Post Request</title>
+</head>
+<body>
+<button id="streambtn">Start Streaming</button>
+<label for="messageInput">Enter your prompt:</label>
+<input type="text" id="messageInput" placeholder="Enter message">
+<div style="padding-top: 10px" id="container"></div>
+
+<script>
+    const button = document.getElementById('streambtn');
+    const container = document.getElementById('container');
+    const input = document.getElementById('messageInput');
+
+    function resetForm(){
+        input.value = '';
+        container.textContent = '';
+    }
+
+    async function stream(message){
+        const response = await fetch('http://localhost:8000/generate/text/stream', {
+            method: "POST",
+            cache: "no-cache",
+            keepalive: true,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "text/event-stream",
+            },
+            body: JSON.stringify({
+                prompt: message,
+            }),
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder()
+
+        while (true) {
+            const {value, done} = await reader.read();
+            if (done) break;
+            container.textContent += decoder.decode(value);
+        }
+    }
+
+    button.addEventListener('click', async function() {
+        resetForm()
+        await stream(input.value)
+
+    });
+
+</script>
+</body>
+</html>
