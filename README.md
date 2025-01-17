@@ -1,9 +1,16 @@
 # 🦆 Building Generative AI Services with FastAPI
 The official code repository for *Building Generative AI Services with FastAPI* to be published worldwide **May 2025**.   
 
-You can read the early release chapters of the book by clicking on the image below.
 
-[<img alt="Building Generative AI Services with FastAPI (O'Reilly)" width="400" src="images/cover.png" />](https://learning.oreilly.com/library/view/building-generative-ai/9781098160296/)
+You can pre-order the book by clicking on the image below.
+
+Amazon US: [Link}(https://www.amazon.co.uk/Building-Generative-Services-Fastapi-Applications/dp/1098160304)
+
+Amazon UK: [Link](https://www.amazon.co.uk/Building-Generative-Services-Fastapi-Applications/dp/1098160304)
+
+Read Early Release Chapters on O'Reilly: [Link](https://www.oreilly.com/library/view/building-generative-ai/9781098160296/)
+
+[<img alt="Building Generative AI Services with FastAPI (O'Reilly)" width="400" src="images/cover.png" />](https://www.amazon.co.uk/Building-Generative-Services-Fastapi-Applications/dp/1098160304)
 
 ## 💻 Installation 
 
