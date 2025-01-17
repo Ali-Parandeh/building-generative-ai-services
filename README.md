@@ -4,7 +4,7 @@ The official code repository for *Building Generative AI Services with FastAPI* 
 
 You can pre-order the book by clicking on the image below.
 
-Amazon US: [Link}(https://www.amazon.co.uk/Building-Generative-Services-Fastapi-Applications/dp/1098160304)
+Amazon US: [Link](https://www.amazon.co.uk/Building-Generative-Services-Fastapi-Applications/dp/1098160304)
 
 Amazon UK: [Link](https://www.amazon.co.uk/Building-Generative-Services-Fastapi-Applications/dp/1098160304)
 
