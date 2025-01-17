@@ -1,6 +1,7 @@
-export model=google/gemma-2b
-export volume=$PWD/data
-
-docker run --gpus all --shm-size 1g -p 8080:80 -v "$volume":/data \
-ghcr.io/huggingface/text-generation-inference:2.0.4 \
---model-id $model
+docker run --runtime nvidia --gpus all \
+    -v ~/.cache/huggingface:/root/.cache/huggingface \
+    --env "HUGGING_FACE_HUB_TOKEN=<secret>" \
+    -p 8080:8000 \
+    --ipc=host \
+    vllm/vllm-openai:latest \
+    --model mistralai/Mistral-7B-v0.1
