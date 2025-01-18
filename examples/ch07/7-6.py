@@ -2,11 +2,11 @@
 
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, status
-from sqlalchemy import select
 from database import DBSessionDep
 from entities import Conversation
+from fastapi import Depends, FastAPI, HTTPException, status
 from schemas import ConversationCreate, ConversationOut, ConversationUpdate
+from sqlalchemy import select
 
 app = FastAPI()
 
