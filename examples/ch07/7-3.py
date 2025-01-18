@@ -16,6 +16,7 @@ async def init_db() -> None:
 # main.py
 
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from database import engine, init_db
 
