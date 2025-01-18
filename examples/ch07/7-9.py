@@ -1,4 +1,5 @@
 # routers/conversations.py
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
@@ -21,33 +22,38 @@ async def get_conversation(conversation_id: int, session: SessionDep) -> Convers
 GetConversationDep = Annotated[Conversation, Depends(get_conversation)]
 
 
-@router.get("/conversations")
+@router.get("")
 async def list_conversations_controller(
     session: SessionDep, skip: int = 0, take: int = 100
 ) -> list[ConversationOut]:
-    return await ConversationRepository(session).list(skip, take)
+    conversations = await ConversationRepository(session).list(skip, take)
+    return [ConversationOut.model_validate(c) for c in conversations]
 
 
-@router.get("/conversations/{id}")
+@router.get("/{id}")
 async def get_conversation_controller(conversation: GetConversationDep) -> ConversationOut:
-    return conversation
+    return ConversationOut.model_validate(conversation)
 
 
-@router.post("/conversations", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_conversation_controller(
     conversation: ConversationCreate, session: SessionDep
 ) -> ConversationOut:
-    return await ConversationRepository(session).create(conversation)
+    new_conversation = await ConversationRepository(session).create(conversation)
+    return ConversationOut.model_validate(new_conversation)
 
 
-@router.put("/conversations/{id}", status_code=status.HTTP_202_ACCEPTED)
+@router.put("/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def update_conversation_controller(
     conversation: GetConversationDep, updated_conversation: ConversationUpdate, session: SessionDep
 ) -> ConversationOut:
-    return await ConversationRepository(session).update(conversation.id, updated_conversation)
+    updated_conversation = await ConversationRepository(session).update(
+        conversation.id, updated_conversation
+    )
+    return ConversationOut.model_validate(updated_conversation)
 
 
-@router.delete("/conversations/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_conversation_controller(
     conversation: GetConversationDep, session: SessionDep
 ) -> None:
