@@ -34,5 +34,5 @@ async def stream_llm_controller(
     # Invoke LLM and obtain the response stream
     ...
     stream_1, stream_2 = tee(response_stream)
-    background_task.add_task(store_message, prompt, stream_1, conversation.id, session)
+    background_task.add_task(store_message, prompt, "".join(stream_1), conversation.id, session)
     return StreamingResponse(stream_2)
