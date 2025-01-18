@@ -1,9 +1,10 @@
 # database.py
 
 from typing import Annotated
+
+from database import engine
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from database import engine
 
 async_session = async_sessionmaker(
     bind=engine, class_=AsyncSession, autocommit=False, autoflush=False

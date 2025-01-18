@@ -1,7 +1,7 @@
 # database.py
 
-from sqlalchemy.ext.asyncio import create_async_engine
 from entities import Base
+from sqlalchemy.ext.asyncio import create_async_engine
 
 database_url = "postgresql+psycopg://fastapi:mysecretpassword@localhost:5432/backend_db"
 engine = create_async_engine(database_url, echo=True)
@@ -17,8 +17,8 @@ async def init_db() -> None:
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
 from database import engine, init_db
+from fastapi import FastAPI
 
 
 @asynccontextmanager
