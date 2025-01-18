@@ -1,0 +1,1 @@
+alembic revision --autogenerate -m "Initial Migration"
