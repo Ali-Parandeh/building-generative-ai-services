@@ -2,11 +2,11 @@
 
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy import select
 from database import DBSessionDep
 from entities import Conversation
-from schemas import ConversationIn, ConversationOut
+from schemas import ConversationCreate, ConversationOut, ConversationUpdate
 
 app = FastAPI()
 
@@ -18,7 +18,7 @@ async def get_conversation(conversation_id: int, session: DBSessionDep) -> Conve
         )
         conversation = result.scalars().first()
     if not conversation:
-        raise HTTPException(status_code=404, detail="Conversation not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
     return conversation
 
 
@@ -39,9 +39,9 @@ async def get_conversation_controller(conversation: GetConversationDep) -> Conve
     return ConversationOut.model_validate(conversation)
 
 
-@app.post("/conversations", status_code=201)
+@app.post("/conversations", status_code=status.HTTP_201_CREATED)
 async def create_conversation_controller(
-    conversation: ConversationIn, session: DBSessionDep
+    conversation: ConversationCreate, session: DBSessionDep
 ) -> ConversationOut:
     new_conversation = Conversation(**conversation.model_dump())
     async with session.begin():
@@ -51,7 +51,21 @@ async def create_conversation_controller(
     return ConversationOut.model_validate(new_conversation)
 
 
-@app.delete("/conversations/{id}", status_code=204)
+@app.put("/conversations/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def update_conversation_controller(
+    updated_conversation: ConversationUpdate,
+    conversation: GetConversationDep,
+    session: DBSessionDep,
+) -> ConversationOut:
+    for key, value in updated_conversation.model_dump().items():
+        setattr(conversation, key, value)
+    async with session.begin():
+        await session.commit()
+        await session.refresh(conversation)
+    return ConversationOut.model_validate(conversation)
+
+
+@app.delete("/conversations/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_conversation_controller(
     conversation: GetConversationDep, session: DBSessionDep
 ) -> None:
