@@ -11,8 +11,8 @@ revision = "2413cf32b712"
 down_revision = None
 branch_labels = None
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
 def upgrade():
