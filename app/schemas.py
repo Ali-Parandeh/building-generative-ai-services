@@ -22,8 +22,12 @@ TokenCount = Annotated[int, Field(ge=0)]
 PriceTable: TypeAlias = dict[SupportedTextModels, float]
 price_table: PriceTable = {"gpt-3.5": 0.0030, "gpt-4": 0.0200}
 
-ImageSize = Annotated[tuple[PositiveInt, PositiveInt], "Width and height of an image in pixels"]
-SupportedImageModels = Annotated[Literal["tinysd", "sd1.5"], "Supported Image Generation Models"]
+ImageSize = Annotated[
+    tuple[PositiveInt, PositiveInt], "Width and height of an image in pixels"
+]
+SupportedImageModels = Annotated[
+    Literal["tinysd", "sd1.5"], "Supported Image Generation Models"
+]
 
 
 @validate_call
@@ -36,16 +40,22 @@ def is_square_image(value: ImageSize) -> ImageSize:
 
 
 @validate_call
-def is_valid_inference_step(num_inference_steps: int, model: SupportedImageModels) -> int:
+def is_valid_inference_step(
+    num_inference_steps: int, model: SupportedImageModels
+) -> int:
     if model == "tinysd" and num_inference_steps > 2000:
-        raise ValueError("TinySD model cannot have more than 2000 inference steps")
+        raise ValueError(
+            "TinySD model cannot have more than 2000 inference steps"
+        )
     return num_inference_steps
 
 
 OutputSize = Annotated[ImageSize, AfterValidator(is_square_image)]
 InferenceSteps = Annotated[
     int,
-    AfterValidator(lambda v, values: is_valid_inference_step(v, values["model"])),
+    AfterValidator(
+        lambda v, values: is_valid_inference_step(v, values["model"])
+    ),
 ]
 
 
@@ -56,10 +66,16 @@ class ModelRequest(BaseModel):
 class ModelResponse(BaseModel):
     request_id: Annotated[str, Field(default_factory=lambda: uuid4().hex)]
     # no defaults set for ip field
-    # raises ValidationError if a valid IP address or None is not provided.
+    # raise ValidationError if a valid IP address or None is not provided.
     ip: Annotated[str, IPvAnyAddress] | None
     content: Annotated[str | None, Field(min_length=0, max_length=10000)]
     created_at: datetime = datetime.now()
+
+
+class TextModelRequest(BaseModel):
+    model: Literal["gpt-3.5-turbo", "gpt-4o"]
+    prompt: str
+    temperature: float = 0.0
 
 
 class TextModelResponse(ModelResponse):
