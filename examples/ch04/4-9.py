@@ -1,16 +1,21 @@
 # schemas.py
 
 from typing import Annotated, Literal
+
 from pydantic import (
+    AfterValidator,
     BaseModel,
     Field,
     PositiveInt,
-    AfterValidator,
     validate_call,
 )
 
-ImageSize = Annotated[tuple[PositiveInt, PositiveInt], "Width and height of an image in pixels"]
-SupportedModels = Annotated[Literal["tinysd", "sd1.5"], "Supported Image Generation Models"]
+ImageSize = Annotated[
+    tuple[PositiveInt, PositiveInt], "Width and height of an image in pixels"
+]
+SupportedModels = Annotated[
+    Literal["tinysd", "sd1.5"], "Supported Image Generation Models"
+]
 
 
 @validate_call
@@ -23,16 +28,22 @@ def is_square_image(value: ImageSize) -> ImageSize:
 
 
 @validate_call
-def is_valid_inference_step(num_inference_steps: int, model: SupportedModels) -> int:
+def is_valid_inference_step(
+    num_inference_steps: int, model: SupportedModels
+) -> int:
     if model == "tinysd" and num_inference_steps > 2000:
-        raise ValueError("TinySD model cannot have more than 2000 inference steps")
+        raise ValueError(
+            "TinySD model cannot have more than 2000 inference steps"
+        )
     return num_inference_steps
 
 
 OutputSize = Annotated[ImageSize, AfterValidator(is_square_image)]
 InferenceSteps = Annotated[
     int,
-    AfterValidator(lambda v, values: is_valid_inference_step(v, values["model"])),
+    AfterValidator(
+        lambda v, values: is_valid_inference_step(v, values["model"])
+    ),
 ]
 
 
