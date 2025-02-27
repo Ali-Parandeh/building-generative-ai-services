@@ -13,7 +13,9 @@ class ConversationRepository(Repository):
 
     async def list(self, skip: int, take: int) -> list[Conversation]:
         async with self.session.begin():
-            result = await self.session.execute(select(Conversation).offset(skip).limit(take))
+            result = await self.session.execute(
+                select(Conversation).offset(skip).limit(take)
+            )
         return [r for r in result.scalars().all()]
 
     async def get(self, conversation_id: int) -> Conversation | None:
