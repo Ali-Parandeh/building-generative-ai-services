@@ -20,9 +20,9 @@ class DocumentStoreClient:
             documents=documents, collection_name=self.collection_name
         )
 
-    async def query_database(self, query_text) -> list[ScoredPoint]:
+    async def search(self, query_vector: list[float]) -> list[ScoredPoint]:
         results = await self.db_client.search(
-            query_vector=query_text,
+            query_vector=query_vector,
             limit=3,
             collection_name=self.collection_name,
         )

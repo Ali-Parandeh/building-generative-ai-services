@@ -17,13 +17,6 @@ class CacheClient:
             ),
         )
 
-    async def search(self, embedding) -> list[ScoredPoint]:
-        return await self.db.search(
-            collection_name=self.cache_collection_name,
-            query_vector=embedding,
-            limit=1,
-        )
-
     async def insert(
         self, query_vector: list[float], documents: list[str]
     ) -> None:
@@ -34,4 +27,11 @@ class CacheClient:
         )
         await self.db.upload_points(
             collection_name=self.cache_collection_name, points=[point]
+        )
+
+    async def search(self, query_vector: list[float]) -> list[ScoredPoint]:
+        return await self.db.search(
+            collection_name=self.cache_collection_name,
+            query_vector=query_vector,
+            limit=1,
         )
