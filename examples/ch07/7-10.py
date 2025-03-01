@@ -15,22 +15,20 @@ class ConversationService(ConversationRepository):
 
 # routers/conversations.py
 
-from database import get_db_session
+from database import DBSessionDep
 from entities import Message
 from fastapi import APIRouter
 from schemas import MessageOut
 from services.conversations import ConversationService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 # replace every ConversationRepository(db) instances with ConversationService(db)
-
 router = APIRouter()
 
 
-@router.get("/conversations/{conversation_id}/messages")
+@router.get("/{conversation_id}/messages")
 async def list_conversation_messages_controller(
     conversation: GetConversationDep,
-    session: AsyncSession = Depends(get_db_session),
+    session: DBSessionDep,
 ) -> list[Message]:
     messages = await ConversationService(session).list_messages(conversation.id)
     return [MessageOut.model_validate(m) for m in messages]

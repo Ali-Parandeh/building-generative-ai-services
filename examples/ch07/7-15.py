@@ -1,65 +1,43 @@
-# alembic/versions/24c35f32b152.py
+# main.py
 
-from datetime import UTC, datetime
+from itertools import tee
 
-import sqlalchemy as sa
-from alembic import op
+from database import DBSessionDep
+from entities import Message
+from fastapi import BackgroundTasks, Depends, FastAPI
+from fastapi.responses import StreamingResponse
+from repositories.conversations import Conversation
+from repositories.messages import MessageRepository
+from sqlalchemy.ext.asyncio import AsyncSession
 
-"""
-Revision ID: 2413cf32b712 Revises:
-Create Date: 2024-07-11 12:30:17.089406
-"""
-
-# revision identifiers, used by Alembic.
-revision = "24c35f32b152"
-down_revision = None
-branch_labels = None
+app = FastAPI()
 
 
-def upgrade():
-    op.create_table(
-        "conversations",
-        sa.Column("id", sa.BigInteger, primary_key=True),
-        sa.Column("title", sa.String, nullable=False),
-        sa.Column("model_type", sa.String, index=True, nullable=False),
-        sa.Column("created_at", sa.DateTime, default=datetime.now(UTC), nullable=False),
-        sa.Column(
-            "updated_at",
-            sa.DateTime,
-            default=datetime.now(UTC),
-            onupdate=datetime.now(UTC),
-            nullable=False,
-        ),
+async def store_message(
+    prompt_content: str,
+    response_content: str,
+    conversation_id: int,
+    session: AsyncSession,
+) -> None:
+    message = Message(
+        conversation_id=conversation_id,
+        prompt_content=prompt_content,
+        response_content=response_content,
     )
+    await MessageRepository(session).create(message)
 
-    op.create_table(
-        "messages",
-        sa.Column("id", sa.BigInteger, primary_key=True),
-        sa.Column(
-            "conversation_id",
-            sa.BigInteger,
-            sa.ForeignKey("conversations.id", ondelete="CASCADE"),
-            index=True,
-            nullable=False,
-        ),
-        sa.Column("prompt_content", sa.Text, nullable=False),
-        sa.Column("response_content", sa.Text, nullable=False),
-        sa.Column("prompt_tokens", sa.Integer, nullable=True),
-        sa.Column("response_tokens", sa.Integer, nullable=True),
-        sa.Column("total_tokens", sa.Integer, nullable=True),
-        sa.Column("is_success", sa.Boolean, nullable=True),
-        sa.Column("status_code", sa.Integer, nullable=True),
-        sa.Column("created_at", sa.DateTime, default=datetime.now(UTC), nullable=False),
-        sa.Column(
-            "updated_at",
-            sa.DateTime,
-            default=datetime.now(UTC),
-            onupdate=datetime.now(UTC),
-            nullable=False,
-        ),
+
+@app.get("/text/generate/stream")
+async def stream_llm_controller(
+    prompt: str,
+    background_task: BackgroundTasks,
+    session: DBSessionDep,
+    conversation: Conversation = Depends(get_conversation),
+) -> StreamingResponse:
+    # Invoke LLM and obtain the response stream
+    ...
+    stream_1, stream_2 = tee(response_stream)
+    background_task.add_task(
+        store_message, prompt, "".join(stream_1), conversation.id, session
     )
-
-
-def downgrade():
-    op.drop_table("messages")
-    op.drop_table("conversations")
+    return StreamingResponse(stream_2)
