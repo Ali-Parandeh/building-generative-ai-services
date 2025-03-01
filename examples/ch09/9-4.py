@@ -16,25 +16,24 @@ mentions of various tools and libraries to use.
 """
 
 
-def get_guardrail_system_prompt_template(content: str) -> str:
-    return f"""
-    You are a moderation assistant.
-    Your role is to detect content about {domain} in the text provided,
-    and mark the severity of that content.
-    
-    ## {domain}
-    
-    ### Criteria
-    
-    {criteria}
-    
-    ### Instructions
-    
-    {steps}
-    
-    ### Content
-    
-    {content}
-    
-    ### Evaluation (score only!)
-    """
+f"""
+You are a moderation assistant.
+Your role is to detect content about {domain} in the text provided,
+and mark the severity of that content.
+
+## {domain}
+
+### Criteria
+
+{criteria}
+
+### Instructions
+
+{steps}
+
+### Content
+
+<content>
+
+### Evaluation (score only!)
+"""

@@ -8,16 +8,16 @@ from loguru import logger
 
 
 async def invoke_llm_with_guardrails(user_query: str) -> str:
-    is_allowed_topic_task = asyncio.create_task(is_topic_allowed(user_query))
+    topical_guardrail_task = asyncio.create_task(is_topic_allowed(user_query))
     chat_task = asyncio.create_task(llm_client.invoke(user_query))
 
     while True:
         done, _ = await asyncio.wait(
-            [is_allowed_topic_task, chat_task],
+            [topical_guardrail_task, chat_task],
             return_when=asyncio.FIRST_COMPLETED,
         )
-        if is_allowed_topic_task in done:
-            topic_allowed = is_allowed_topic_task.result()
+        if topical_guardrail_task in done:
+            topic_allowed = topical_guardrail_task.result()
             if not topic_allowed:
                 chat_task.cancel()
                 logger.warning("Topical guardrail triggered")
