@@ -12,10 +12,9 @@ AuthenticateUserCredDep = Annotated[
     str, Depends(auth_service.authenticate_user_with_credentials)
 ]
 AuthenticateUserTokenDep = Annotated[User, Depends(auth_service.register_user)]
-LogoutUserDep = Annotated[None, Depends(auth_service.logout)]
 PasswordResetDep = Annotated[None, Depends(auth_service.reset_password)]
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @router.post("/register")
@@ -30,7 +29,7 @@ async def login_for_access_token_controller(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.post("/logout", dependencies=[LogoutUserDep])
+@router.post("/logout", dependencies=[Depends(auth_service.logout)])
 async def logout_access_token_controller() -> dict:
     return {"message": "Logged out"}
 
