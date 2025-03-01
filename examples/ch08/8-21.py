@@ -32,7 +32,6 @@ AuthorizationRep = Annotated[bool, Depends(authorize)]
 from dependencies.auth import authorize
 from fastapi import APIRouter, Depends
 
-
 router = APIRouter(
     dependencies=[Depends(authorize)], prefix="/generate", tags=["Resource"]
 )
