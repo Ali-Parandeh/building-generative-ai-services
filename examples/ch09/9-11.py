@@ -2,8 +2,8 @@ from contextlib import asynccontextmanager
 
 import redis
 from fastapi import Depends, FastAPI
-from fastapi_limiter import FastAPILimiter
 from fastapi.websockets import WebSocket
+from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import WebSocketRateLimiter
 
 ...
