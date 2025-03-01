@@ -9,7 +9,7 @@ class CacheClient:
         self.db = AsyncQdrantClient(":memory:")
         self.cache_collection_name = "cache"
 
-    async def init_db(self) -> None:
+    async def initialize_database(self) -> None:
         await self.db.create_collection(
             collection_name=self.cache_collection_name,
             vectors_config=models.VectorParams(

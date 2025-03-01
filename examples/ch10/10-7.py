@@ -9,7 +9,7 @@ class DocumentStoreClient:
         self.db_client = AsyncQdrantClient(host=host, port=port)
         self.collection_name = "docs"
 
-    async def init_db(self) -> None:
+    async def initialize_database(self) -> None:
         await self.db_client.create_collection(
             collection_name=self.collection_name,
             vectors_config=models.VectorParams(
