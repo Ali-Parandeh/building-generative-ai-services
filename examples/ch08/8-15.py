@@ -1,4 +1,4 @@
-# routes/auth.py
+# dependencies/auth.py
 
 from typing import Annotated
 
