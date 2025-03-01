@@ -1,7 +1,7 @@
 import uuid
 
 from qdrant_client import AsyncQdrantClient, models
-from qdrant_client.http.models import Distance, PointStruct
+from qdrant_client.http.models import Distance, PointStruct, ScoredPoint
 
 
 class CacheClient:
@@ -9,7 +9,7 @@ class CacheClient:
         self.db = AsyncQdrantClient(":memory:")
         self.cache_collection_name = "cache"
 
-    async def create_cache_collection(self) -> None:
+    async def init_db(self) -> None:
         await self.db.create_collection(
             collection_name=self.cache_collection_name,
             vectors_config=models.VectorParams(
@@ -17,7 +17,7 @@ class CacheClient:
             ),
         )
 
-    async def search(self, embedding) -> list[PointStruct]:
+    async def search(self, embedding) -> list[ScoredPoint]:
         return await self.db.search(
             collection_name=self.cache_collection_name,
             query_vector=embedding,
