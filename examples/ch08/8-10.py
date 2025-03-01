@@ -6,11 +6,8 @@ from databases import DBSessionDep
 from entities import Token, User, UserCreate, UserInDB
 from exceptions import AlreadyRegisteredException, UnauthorizedException
 from fastapi import Depends
-from fastapi.security import (
-    HTTPAuthorizationCredentials,
-    HTTPBearer,
-    OAuth2PasswordRequestForm,
-)
+from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
+                              OAuth2PasswordRequestForm)
 from services.auth import PasswordService, TokenService
 from services.users import UserService
 
