@@ -1,0 +1,56 @@
+{# pages/client-sse.html #}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>SSE with EventSource API</title>
+</head>
+<body>
+<button id="streambtn">Start Streaming</button>
+<label for="messageInput">Enter your prompt:</label>
+<input type="text" id="messageInput" placeholder="Enter your prompt">
+<div style="padding-top: 10px" id="responseContainer"></div>
+
+<script>
+    let source;
+    const button = document.getElementById('streambtn');
+    const container = document.getElementById('container');
+    const input = document.getElementById('messageInput');
+
+    function resetForm(){
+        input.value = '';
+        container.textContent = '';
+    }
+
+    function handleOpen() {
+        console.log('Connection was opened');
+    }
+    function handleMessage(e){
+        if (e.data === '[DONE]') {
+            source.close();
+            console.log('Connection was closed');
+            return;
+        }
+
+        container.textContent += e.data;
+    }
+    function handleClose(e){
+        console.error(e);
+        source.close()
+    }
+
+    button.addEventListener('click', function() {
+        const message = input.value;
+        const url = 'http://localhost:8000/generate/text/stream?prompt=' +
+            encodeURIComponent(message);
+        resetForm()
+
+        source = new EventSource(url);
+        source.addEventListener('open', handleOpen, false);
+        source.addEventListener('message', handleMessage, false);
+        source.addEventListener('error', handleClose, false);
+    });
+
+</script>
+</body>
+</html>

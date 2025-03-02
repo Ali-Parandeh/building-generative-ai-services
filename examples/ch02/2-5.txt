@@ -1,0 +1,10 @@
+flat-project
+├── app
+│   ├── services.py
+│   ├── database.py
+│   ├── models.py
+│   ├── routers.py
+│   └── main.py
+├── requirements.txt
+├── .env
+├── .gitignore

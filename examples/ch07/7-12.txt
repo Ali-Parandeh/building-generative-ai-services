@@ -1,0 +1,8 @@
+project/
+    alembic.ini
+    alembic/
+        env.py
+        README
+        script.py.mako
+        versions/
+            <migration.py files will appear here>

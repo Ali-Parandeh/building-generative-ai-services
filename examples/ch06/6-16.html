@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Stream with WebSockets</title>
+</head>
+<body>
+<button id="streambtn">Start Streaming</button>
+<button id="closebtn">Close Connection</button>
+<label for="messageInput">Enter your prompt:</label>
+<input type="text" id="messageInput" placeholder="Enter message">
+<div style="padding-top: 10px" id="container"></div>
+
+<script>
+    const streamButton = document.getElementById('streambtn');
+    const closeButton = document.getElementById('closebtn');
+    const container = document.getElementById('container');
+    const input = document.getElementById('messageInput');
+    let ws;
+    let retryCount = 0;
+    const maxRetries = 5;
+    let isError = false;
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function connectWebSocket() {
+        ws = new WebSocket("ws://localhost:8000/generate/text/streams");
+
+        ws.onopen = handleOpen;
+        ws.onmessage = handleMessage;
+        ws.onclose = handleClose;
+        ws.onerror = handleError;
+    }
+
+    function handleOpen(){
+        console.log("WebSocket connection opened");
+        retryCount = 0;
+        isError = false;
+    }
+
+    function handleMessage(event) {
+        container.textContent += event.data;
+    }
+
+    async function handleClose(){
+        console.log("WebSocket connection closed");
+        if (isError && retryCount < maxRetries) {
+            console.warn("Retrying connection...");
+            await sleep(Math.pow(2, retryCount) * 1000);
+            retryCount++;
+            connectWebSocket();
+        }
+        else if (isError) {
+            console.error("Max retries reached. Could not reconnect.");
+        }
+    }
+
+    function handleError(error) {
+        console.error("WebSocket error:", error);
+        isError = true;
+        ws.close();
+    }
+
+    function resetForm(){
+        input.value = '';
+        container.textContent = '';
+    }
+
+    streamButton.addEventListener('click', function() {
+        const prompt = document.getElementById("messageInput").value;
+        if (prompt && ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(prompt);
+        }
+        resetForm();
+    });
+
+    closeButton.addEventListener('click', function() {
+        isError = false;
+        if (ws) {
+            ws.close();
+        }
+    });
+
+    connectWebSocket();
+</script>
+</body>
+</html>
