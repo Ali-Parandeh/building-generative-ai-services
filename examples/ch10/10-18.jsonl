@@ -1,0 +1,19 @@
+// training_data.jsonl
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "<text>"
+    },
+    {
+      "role": "user",
+      "content": "<text>"
+    },
+    {
+      "role": "assistant",
+      "content": "<text>"
+    }
+  ]
+}
+// more entries
