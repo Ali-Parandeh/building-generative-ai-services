@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
 from openai import AsyncOpenAI
+from pydantic import BaseModel, Field
 
 client = AsyncOpenAI()
 
