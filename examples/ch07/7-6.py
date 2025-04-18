@@ -11,14 +11,19 @@ from sqlalchemy import select
 app = FastAPI()
 
 
-async def get_conversation(conversation_id: int, session: DBSessionDep) -> Conversation:
+async def get_conversation(
+    conversation_id: int, session: DBSessionDep
+) -> Conversation:
     async with session.begin():
         result = await session.execute(
             select(Conversation).where(Conversation.id == conversation_id)
         )
         conversation = result.scalars().first()
     if not conversation:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found",
+        )
     return conversation
 
 
@@ -30,12 +35,19 @@ async def list_conversations_controller(
     session: DBSessionDep, skip: int = 0, take: int = 100
 ) -> list[ConversationOut]:
     async with session.begin():
-        result = await session.execute(select(Conversation).offset(skip).limit(take))
-    return [ConversationOut.model_validate(conversation) for conversation in result.scalars().all()]
+        result = await session.execute(
+            select(Conversation).offset(skip).limit(take)
+        )
+    return [
+        ConversationOut.model_validate(conversation)
+        for conversation in result.scalars().all()
+    ]
 
 
 @app.get("/conversations/{id}")
-async def get_conversation_controller(conversation: GetConversationDep) -> ConversationOut:
+async def get_conversation_controller(
+    conversation: GetConversationDep,
+) -> ConversationOut:
     return ConversationOut.model_validate(conversation)
 
 

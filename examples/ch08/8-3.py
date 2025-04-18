@@ -17,7 +17,10 @@ def validate_username(value: str) -> str:
 @validate_call
 def validate_password(value: str) -> str:
     validations = [
-        (lambda v: any(char.isdigit() for char in v), "Password must contain at least one digit"),
+        (
+            lambda v: any(char.isdigit() for char in v),
+            "Password must contain at least one digit",
+        ),
         (
             lambda v: any(char.isupper() for char in v),
             "Password must contain at least one uppercase letter",

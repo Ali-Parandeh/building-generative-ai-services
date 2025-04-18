@@ -13,12 +13,16 @@ class TokenRepository(Repository):
 
     async def list(self, skip: int, take: int) -> list[Token]:
         async with self.session.begin():
-            result = await self.session.execute(select(Token).offset(skip).limit(take))
+            result = await self.session.execute(
+                select(Token).offset(skip).limit(take)
+            )
         return [r for r in result.scalars().all()]
 
     async def get(self, token_id: int) -> Token | None:
         async with self.session.begin():
-            result = await self.session.execute(select(Token).where(Token.id == token_id))
+            result = await self.session.execute(
+                select(Token).where(Token.id == token_id)
+            )
         return result.scalars().first()
 
     async def create(self, token: TokenCreate) -> Token:
@@ -29,7 +33,9 @@ class TokenRepository(Repository):
             await self.session.refresh(new_token)
         return new_token
 
-    async def update(self, token_id: int, updated_token: TokenUpdate) -> Token | None:
+    async def update(
+        self, token_id: int, updated_token: TokenUpdate
+    ) -> Token | None:
         token = await self.get(token_id)
         if not token:
             return None

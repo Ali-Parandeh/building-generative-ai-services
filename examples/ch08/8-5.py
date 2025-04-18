@@ -20,11 +20,16 @@ def upgrade():
         sa.Column("id", sa.UUID(as_uuid=True)),
         sa.Column("email", sa.String(length=255)),
         sa.Column("hashed_password", sa.String(length=255)),
-        sa.Column("is_active", sa.Boolean(), server_default=sa.sql.expression.true()),
+        sa.Column(
+            "is_active", sa.Boolean(), server_default=sa.sql.expression.true()
+        ),
         sa.Column("role", sa.String(), server_default=sa.text("USER")),
         sa.Column("created_at", sa.DateTime(), default=datetime.now(UTC)),
         sa.Column(
-            "updated_at", sa.DateTime(), default=datetime.now(UTC), onupdate=datetime.now(UTC)
+            "updated_at",
+            sa.DateTime(),
+            default=datetime.now(UTC),
+            onupdate=datetime.now(UTC),
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("email"),
@@ -40,7 +45,10 @@ def upgrade():
         sa.Column("ip_address", sa.String(length=255), nullable=True),
         sa.Column("created_at", sa.DateTime(), default=datetime.now(UTC)),
         sa.Column(
-            "updated_at", sa.DateTime(), default=datetime.now(UTC), onupdate=datetime.now(UTC)
+            "updated_at",
+            sa.DateTime(),
+            default=datetime.now(UTC),
+            onupdate=datetime.now(UTC),
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],

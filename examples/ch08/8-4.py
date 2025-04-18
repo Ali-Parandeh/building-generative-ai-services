@@ -35,7 +35,9 @@ class User(Base):
     __tablename__ = "users"
     # other columns...
 
-    tokens = relationship("Token", back_populates="user", cascade="all, delete-orphan")
+    tokens = relationship(
+        "Token", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 # schemas.py
@@ -53,10 +55,6 @@ class TokenBase(BaseModel):
 
 
 class TokenCreate(TokenBase):
-    pass
-
-
-class TokenUpdate(TokenBase):
     pass
 
 

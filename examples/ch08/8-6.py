@@ -8,7 +8,9 @@ class PasswordService:
     security = HTTPBearer()
     pwd_context = CryptContext(schemes=["bcrypt"])
 
-    async def verify_password(self, password: str, hashed_password: str) -> bool:
+    async def verify_password(
+        self, password: str, hashed_password: str
+    ) -> bool:
         return self.pwd_context.verify(password, hashed_password)
 
     async def get_password_hash(self, password: str) -> str:

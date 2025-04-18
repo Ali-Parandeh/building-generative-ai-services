@@ -6,7 +6,8 @@ from databases import DBSessionDep
 from entities import Token, User, UserCreate, UserInDB
 from exceptions import AlreadyRegisteredException, UnauthorizedException
 from fastapi import Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordRequestForm
+from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
+                              OAuth2PasswordRequestForm)
 from services.auth import PasswordService, TokenService
 from services.users import UserService
 
@@ -24,7 +25,9 @@ class AuthService:
     async def register_user(self, user: UserCreate) -> User:
         if await self.user_service.get(user.username):
             raise AlreadyRegisteredException
-        hashed_password = await self.password_service.get_password_hash(user.password)
+        hashed_password = await self.password_service.get_password_hash(
+            user.password
+        )
         return await self.user_service.create(
             UserInDB(username=user.username, hashed_password=hashed_password)
         )

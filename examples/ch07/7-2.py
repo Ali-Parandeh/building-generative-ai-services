@@ -45,4 +45,6 @@ class Message(Base):
         default=datetime.now(UTC), onupdate=datetime.now(UTC)
     )
 
-    conversation: Mapped["Conversation"] = relationship("Conversation", back_populates="messages")
+    conversation: Mapped["Conversation"] = relationship(
+        "Conversation", back_populates="messages"
+    )

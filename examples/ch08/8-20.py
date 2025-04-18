@@ -1,12 +1,16 @@
 # dependencies/auth.py
 
+from typing import Annotated
+
 from entities import User
-from fastapi import Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from services.auth import AuthService
 
+CurrentUserDep = Annotated[User, Depends(AuthService.get_current_user)]
 
-async def is_admin(user: User = Depends(AuthService.get_current_user)) -> User:
-    if user.role != "ADMIN":
+
+async def has_role(user: CurrentUserDep, roles: list[str]) -> User:
+    if user.role not in roles:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not allowed to perform this action",
@@ -16,10 +20,6 @@ async def is_admin(user: User = Depends(AuthService.get_current_user)) -> User:
 
 # routes/resource.py
 
-from dependencies.auth import is_admin
-from fastapi import APIRouter, Depends
-from services.auth import AuthService
-
 router = APIRouter(
     dependencies=[Depends(AuthService.get_current_user)],
     prefix="/generate",
@@ -27,9 +27,14 @@ router = APIRouter(
 )
 
 
-@router.post("/image", dependencies=[Depends(is_admin)])
+@router.post(
+    "/image",
+    dependencies=[Depends(lambda user: has_role(user, ["ADMIN", "MODERATOR"]))],
+)
 async def generate_image_controller(): ...
 
 
-@router.post("/text")
+@router.post(
+    "/text", dependencies=[Depends(lambda user: has_role(user, ["EDITOR"]))]
+)
 async def generate_text_controller(): ...

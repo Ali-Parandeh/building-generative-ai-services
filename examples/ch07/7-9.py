@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 ...  # Other imports
 from repositories import ConversationRepository
@@ -12,10 +12,15 @@ from repositories import ConversationRepository
 router = APIRouter(prefix="/conversations")
 
 
-async def get_conversation(conversation_id: int, session: SessionDep) -> Conversation:
+async def get_conversation(
+    conversation_id: int, session: SessionDep
+) -> Conversation:
     conversation = await ConversationRepository(session).get(conversation_id)
     if not conversation:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found",
+        )
     return conversation
 
 
@@ -31,7 +36,9 @@ async def list_conversations_controller(
 
 
 @router.get("/{id}")
-async def get_conversation_controller(conversation: GetConversationDep) -> ConversationOut:
+async def get_conversation_controller(
+    conversation: GetConversationDep,
+) -> ConversationOut:
     return ConversationOut.model_validate(conversation)
 
 
@@ -39,13 +46,17 @@ async def get_conversation_controller(conversation: GetConversationDep) -> Conve
 async def create_conversation_controller(
     conversation: ConversationCreate, session: SessionDep
 ) -> ConversationOut:
-    new_conversation = await ConversationRepository(session).create(conversation)
+    new_conversation = await ConversationRepository(session).create(
+        conversation
+    )
     return ConversationOut.model_validate(new_conversation)
 
 
 @router.put("/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def update_conversation_controller(
-    conversation: GetConversationDep, updated_conversation: ConversationUpdate, session: SessionDep
+    conversation: GetConversationDep,
+    updated_conversation: ConversationUpdate,
+    session: SessionDep,
 ) -> ConversationOut:
     updated_conversation = await ConversationRepository(session).update(
         conversation.id, updated_conversation

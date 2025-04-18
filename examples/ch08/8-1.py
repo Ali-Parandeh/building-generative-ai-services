@@ -10,7 +10,9 @@ username_bytes = b"ali"
 password_bytes = b"secretpassword"
 
 
-def authenticate_user(credentials: Annotated[HTTPBasicCredentials, Depends(security)]) -> str:
+def authenticate_user(
+    credentials: Annotated[HTTPBasicCredentials, Depends(security)]
+) -> str | None:
     is_correct_username = secrets.compare_digest(
         credentials.username.encode("UTF-8"), username_bytes
     )
