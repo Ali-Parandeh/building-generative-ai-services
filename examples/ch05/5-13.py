@@ -1,6 +1,13 @@
 # main.py
 
-from fastapi import BackgroundTasks, FastAPI, File, UploadFile, status, HTTPException
+from fastapi import (
+    BackgroundTasks,
+    FastAPI,
+    File,
+    UploadFile,
+    status,
+    HTTPException,
+)
 from typing import Annotated
 from rag import pdf_text_extractor, vector_service
 

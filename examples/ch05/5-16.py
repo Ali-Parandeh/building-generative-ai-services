@@ -15,12 +15,23 @@ async def generate_text(prompt: str, temperature: float = 0.7) -> str:
     headers = {"Authorization": f"Bearer {os.environ.get('VLLM_API_KEY')}"}
     try:
         async with aiohttp.ClientSession() as session:
-            predictions = await session.post(
+            response = await session.post(
                 "http://localhost:8000/v1/chat", json=data, headers=headers
             )
+            predictions = await response.json()
     except Exception as e:
-        logger.error(f"Failed to obtain predictions from VLLM - Error: {e}")
-        return "Failed to obtain predictions from VLLM - See server logs for more details"
-    output = predictions.choices[0].message.content
-    logger.debug(f"Generated text: {output}")
-    return output
+        logger.error(f"Failed to obtain predictions from vLLM - Error: {e}")
+        return (
+            "Failed to obtain predictions from vLLM - "
+            "See server logs for more details"
+        )
+    try:
+        output = predictions["choices"][0]["message"]["content"]
+        logger.debug(f"Generated text: {output}")
+        return output
+    except KeyError as e:
+        logger.error(f"Failed to parse predictions from vLLM - Error: {e}")
+        return (
+            "Failed to parse predictions from vLLM - "
+            "See server logs for more details"
+        )
