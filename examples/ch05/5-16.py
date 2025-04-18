@@ -1,6 +1,7 @@
 # models.py
 
 import os
+
 import aiohttp
 from loguru import logger
 
@@ -20,18 +21,12 @@ async def generate_text(prompt: str, temperature: float = 0.7) -> str:
             )
             predictions = await response.json()
     except Exception as e:
-        logger.error(f"Failed to obtain predictions from vLLM - Error: {e}")
-        return (
-            "Failed to obtain predictions from vLLM - "
-            "See server logs for more details"
-        )
+        logger.error(f"Failed to obtain predictions from VLLM - Error: {e}")
+        return "Failed to obtain predictions from VLLM - See server logs for more details"
     try:
         output = predictions["choices"][0]["message"]["content"]
         logger.debug(f"Generated text: {output}")
         return output
     except KeyError as e:
-        logger.error(f"Failed to parse predictions from vLLM - Error: {e}")
-        return (
-            "Failed to parse predictions from vLLM - "
-            "See server logs for more details"
-        )
+        logger.error(f"Failed to parse predictions from VLLM - Error: {e}")
+        return "Failed to parse predictions from VLLM - See server logs for more details"

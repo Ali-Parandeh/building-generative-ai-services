@@ -11,14 +11,19 @@ class VectorRepository:
         self.db_client = AsyncQdrantClient(host=host, port=port)
 
     async def create_collection(self, collection_name: str, size: int) -> bool:
-        vectors_config = models.VectorParams(size=size, distance=models.Distance.COSINE)
+        vectors_config = models.VectorParams(
+            size=size, distance=models.Distance.COSINE
+        )
         response = await self.db_client.get_collections()
 
         collection_exists = any(
-            collection.name == collection_name for collection in response.collections
+            collection.name == collection_name
+            for collection in response.collections
         )
         if collection_exists:
-            logger.debug(f"Collection {collection_name} already exists - recreating it")
+            logger.debug(
+                f"Collection {collection_name} already exists - recreating it"
+            )
             await self.db_client.delete_collection(collection_name)
             return await self.db_client.create_collection(
                 collection_name,
@@ -28,7 +33,9 @@ class VectorRepository:
         logger.debug(f"Creating collection {collection_name}")
         return await self.db_client.create_collection(
             collection_name=collection_name,
-            vectors_config=models.VectorParams(size=size, distance=models.Distance.COSINE),
+            vectors_config=models.VectorParams(
+                size=size, distance=models.Distance.COSINE
+            ),
         )
 
     async def delete_collection(self, name: str) -> bool:
@@ -43,7 +50,9 @@ class VectorRepository:
         source: str,
     ) -> None:
         response = await self.db_client.count(collection_name=collection_name)
-        logger.debug(f"Creating a new vector with ID {response.count} inside the {collection_name}")
+        logger.debug(
+            f"Creating a new vector with ID {response.count} inside the {collection_name}"
+        )
         await self.db_client.upsert(
             collection_name=collection_name,
             points=[
@@ -65,7 +74,9 @@ class VectorRepository:
         retrieval_limit: int,
         score_threshold: float,
     ) -> list[ScoredPoint]:
-        logger.debug(f"Searching for relevant items in the {collection_name} collection")
+        logger.debug(
+            f"Searching for relevant items in the {collection_name} collection"
+        )
         response = await self.db_client.query_points(
             collection_name=collection_name,
             query_vector=query_vector,

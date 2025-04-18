@@ -1,8 +1,8 @@
 # schemas.py
 
 from datetime import datetime
-from uuid import uuid4
 from typing import Annotated, Literal
+from uuid import uuid4
 
 from pydantic import BaseModel, Field, HttpUrl, IPvAnyAddress, PositiveInt
 
@@ -14,7 +14,7 @@ class ModelRequest(BaseModel):
 class ModelResponse(BaseModel):
     request_id: Annotated[str, Field(default_factory=lambda: uuid4().hex)]
     # no defaults set for ip field
-    # raises ValidationError if a valid IP address or None is not provided.
+    # raise ValidationError if a valid IP address or None is not provided.
     ip: Annotated[str, IPvAnyAddress] | None
     content: Annotated[str | None, Field(min_length=0, max_length=10000)]
     created_at: datetime = datetime.now()
@@ -29,7 +29,9 @@ class TextModelResponse(ModelResponse):
     tokens: Annotated[int, Field(ge=0)]
 
 
-ImageSize = Annotated[tuple[PositiveInt, PositiveInt], "Width and height of an image in pixels"]
+ImageSize = Annotated[
+    tuple[PositiveInt, PositiveInt], "Width and height of an image in pixels"
+]
 
 
 class ImageModelRequest(ModelRequest):
