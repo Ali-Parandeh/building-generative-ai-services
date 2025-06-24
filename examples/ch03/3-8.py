@@ -19,7 +19,7 @@ from fastapi import FastAPI, Response, status
 from models import load_image_model, generate_image
 from utils import img_to_bytes
 
-app = FastAPI
+app = FastAPI()
 
 
 @app.get(
